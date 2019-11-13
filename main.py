@@ -1,8 +1,12 @@
-import os # CHeck if database index exists
+import os            # CHeck if database index exists
 import itertools
 import pickle as pkl # Export database index
+
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial, reduce
 from Bio import SeqIO
 from tqdm import tqdm
+from time import time
 from pprint import pprint
 
 import utils
@@ -17,24 +21,25 @@ def main():
     q = utils.random_str(charset=S, length=round(len(record)/10000)) # TBD
     d = str(record.seq)
     w = 4
-    c = None # TBD
+    eps = None # TBD
     
-    blast(q, d, w, c, S)
+    blast(q, d, w, eps, S)
 
 
-def blast(q, d, w, c, S):
+def blast(q, d, w, eps, S):
     '''
-    :param q: query
-    :param d: database
-    :param w: word size
-    :param c: cutoff score to determine high scoring pairs (HSPs)
-    :param S: alphabet
+    Paramters:
+        q:   query
+        d:   database
+        w:   word size
+        eps: e-value to determine high scoring pairs (HSPs)
+        S:   alphabet
     '''
     
     index = index_table(d, w, S)
 
-    ungapped_extension(q, d, w, index)
-    gapped_extension()
+    # extend(q, d, w, eps, index)
+    # extend_gap()
 
 
 def index_table(d, w, S):
@@ -42,35 +47,65 @@ def index_table(d, w, S):
     Index database if doesn't already exist at path
     Return index table as dict
     '''
+    start = time()
     path = f'data/processed/index_table_w_{w}.pkl'
 
-    if not os.path.exists(path):
-        index = {}
-        
-        print('Indexing database...')
+    if os.path.exists(path):
+        return pkl.load(open(path, 'rb'))
+     
+    print(f'Indexing database with word size {w}...')
 
-        for wmer in tqdm(itertools.product(S, repeat=w), total=len(S)**w):
-            wmer = ''.join(wmer)
-            index[wmer] = utils.find(wmer, d)
+    wmers = itertools.product(S, repeat=w)
 
-        pkl.dump(index, open(path, 'wb'))
-    
-    return pkl.load(open(path, 'rb'))
+    with ProcessPoolExecutor() as executor:
+        index = dict(filter(
+            lambda x: x,
+            executor.map(partial(_index_table, d), wmers)
+        ))
+
+    pkl.dump(index, open(path, 'wb'))
+    print(f'Time elapsed: {time() - start:.2f}s')
+    return index
+
+
+def _index_table(d, wmer):
+    wmer = ''.join(wmer)
+    indices = utils.find(wmer, d)
+    # return { wmer: indices } if indices else {}
+    return (wmer, indices) if indices else ()
 
 
 def index_trie(d, w, S):
     pass
 
 
-def ungapped_extension(q, d, w, index):
-    for i in range(len(q)-w+1):
-        wmer = q[i:i+w]
+def extend(q, d, w, eps, index):
+    '''
+    Ungapped extension phase
+    '''
+    hsps = []
+    
+    for i in range(len(q) - w + 1):
+        wmer = q[i : i + w]
         
         for match in index[wmer]:
             # Ungapped extension here
             pass
 
-def gapped_extension():
+
+
+def left():
+    pass
+
+
+def right():
+    pass
+
+
+def extend_gap():
+    '''
+    Gapped extension phase
+    '''
     pass
 
 
