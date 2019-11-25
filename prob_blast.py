@@ -1,42 +1,33 @@
 import argparse
-import numpy as np
+import utils
 
-from utils import import_from_file, seq_from_fasta, get_conf
+from Bio.Blast import NCBIWWW, NCBIXML
+from pprint import pprint
 
 def main():
-    parser = argparse.ArgumentParser(description='Probabilistic Blast')
+    parser = argparse.ArgumentParser(description='Probabilistic BLAST')
     parser.add_argument('--config', '-c', type=str, default='config.py', help='[string] Path of config file')
     args = parser.parse_args()
+    params = utils.import_from_file(args.config)
 
-    params = import_from_file(args.config)
-    d = get_prob_seq(params.d, params.d_conf, params.S)
+    # d = utils.get_prob_seq(params.d, params.d_conf, params.S)
+    # q = utils.seq_from_fasta(params.q)
 
-    prob_blast()
+    # prob_blast(q, d, params.w, params.eps, params.S)
 
-def prob_blast():
+    # result_handle = NCBIWWW.qblast('blastn', 'nt', open('query.py', 'r').read())
+    # result_handle = NCBIWWW.qblast('blastn', 'nt', q)
+    # with open('res.xml', 'w') as fout:
+        # fout.write(result_handle.read())
+
+    blast_recs = NCBIXML.parse(open('res.xml', 'r'))
+    for rec in blast_recs:
+        pprint(rec.__dict__)
+
+
+def prob_blast(q, d, w, eps, S):
     pass
 
-def get_prob_seq(fasta, fasta_conf, S):
-    '''
-    Return as numpy array
-    '''
-    seq = seq_from_fasta(fasta)
-    conf = get_conf(fasta_conf)
-
-    assert len(seq) == len(conf)
-
-    prob_seq = np.zeros((len(S), len(seq)))
-
-    for col in range(len(seq)):
-        for row in range(len(S)):
-            if S[row] == seq[col]:
-                prob_seq[row, col] = conf[col]
-            else:
-                prob_seq[row, col] = (1 - conf[col]) / (len(S) - 1)
-    
-    print(prob_seq[:,:5])
-
-    return prob_seq
 
 if __name__ == '__main__':
     main()

@@ -1,28 +1,28 @@
 import os            # CHeck if database index exists
+import argparse
 import itertools
 import pickle as pkl # Export database index
 
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 from Bio import SeqIO
-from tqdm import tqdm
 from time import time
-from pprint import pprint
 
 import utils
 
 
 def main():
-    fasta = 'chr22.maf.ancestors.42000000.complete.boreo.fa'
-    record = list(SeqIO.parse(open(f'data/raw/{fasta}'), 'fasta'))[0]
+    parser = argparse.ArgumentParser(description='BLAST')
+    parser.add_argument('--config', '-c', type=str, default='config.py', help='[string] Path of config file')
+    args = parser.parse_args()
+    params = utils.import_from_file(args.config)
 
-    S = ['A', 'T', 'G', 'C']
-    q = utils.random_str(charset=S, length=round(len(record)/10000)) # TBD
-    d = str(record.seq)
-    w = 4
-    eps = None # TBD
+    q = utils.seq_from_fasta(params.q)
+    d = utils.seq_from_fasta(params.d)
+    # q = utils.random_str(charset=params.S, length=round(len(d)/10000)) # TBD
+    # open('query.fa', 'w').write(q)
     
-    blast(q, d, w, eps, S)
+    blast(q, d, params.w, params.eps, params.S)
 
 
 def blast(q, d, w, eps, S):
