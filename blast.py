@@ -1,21 +1,23 @@
 import os            # CHeck if database index exists
+import time
 import argparse
 import itertools
 import pickle as pkl # Export database index
 
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor # Parallelize table indexing
 from functools import partial
 from Bio import SeqIO
-from time import time
 
 import utils
+from utils.params import params
 
+done = False
 
 def main():
     parser = argparse.ArgumentParser(description='BLAST')
     parser.add_argument('--config', '-c', type=str, default='config.py', help='[string] Path of config file')
     args = parser.parse_args()
-    params = utils.import_from_file(args.config)
+    params.configure(args.config)
 
     q = utils.seq_from_fasta(params.q)
     d = utils.seq_from_fasta(params.d)
@@ -23,6 +25,7 @@ def main():
     # open('query.fa', 'w').write(q)
     
     blast(q, d, params.w, params.eps, params.S)
+    # blast(q, d)
 
 
 def blast(q, d, w, eps, S):
@@ -46,15 +49,15 @@ def index_table(d, w, S):
     Index database if doesn't already exist at path
     Return index table as dict
     '''
-    start = time()
-    path = f'data/processed/index_table_w_{w}.pkl'
+    start = time.time()
+    path = f'data/processed/index_table.w{w}.pkl'
 
     if os.path.exists(path):
         return pkl.load(open(path, 'rb'))
      
     print(f'Indexing database with word size {w}...')
 
-    seeds = itertools.product(S, repeat=w)
+    seeds = utils.gen_seeds(S, w)
 
     with ProcessPoolExecutor() as executor:
         index = dict(filter(
@@ -62,8 +65,8 @@ def index_table(d, w, S):
             executor.map(partial(_index_table, d), seeds)
         ))
     pkl.dump(index, open(path, 'wb'))
-    
-    print(f'Time elapsed: {time() - start:.2f}s')
+
+    print(f'Time elapsed: {time.time() - start:.2f}s')
     return index
 
 
