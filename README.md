@@ -2,6 +2,7 @@
 
 ## Instructions
 ### Rust version
+Motivation: Rust is even faster than Go.  
 In progress.  
 Following this [tutorial](https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/).
 
