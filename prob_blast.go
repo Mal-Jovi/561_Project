@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	w := 7
+	w := 4
 	hit_thres := 0.9
 	delta := 10.
 	// delta := math.Inf(1)
@@ -27,7 +27,7 @@ func main() {
 	)
 	q := seq_from_fasta("query.fa")
 
-	prob_blast(& q, & d, w, & S, hit_thres, delta, hsp_thres, e_thres)
+	prob_blast(q, d, w, & S, hit_thres, delta, hsp_thres, e_thres)
 }
 
 func prob_blast(q * string, d *[][] float64, w int, S *[] string,
@@ -36,13 +36,13 @@ func prob_blast(q * string, d *[][] float64, w int, S *[] string,
 	// alingments := []int{}
 	// index := prob_index_table(d, w, S, hit_thres)
 	index := prob_index_table(d, w, S, hit_thres)	
-	hsps := prob_extend(q, d, w, S, & index, hit_thres, delta, hsp_thres, e_thres)
-	fmt.Println(hsps)
-	prob_extend_gap(& hsps)
+	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
+	fmt.Println(* hsps)
+	prob_extend_gap(hsps)
 }
 
 func prob_index_table(d *[][] float64, w int, S *[] string,
-		              hit_thres float64) map[string] []int {
+		              hit_thres float64) * map[string][]int {
 	
 	path := fmt.Sprint("data/processed/prob_index_table.w", w, ".hit_thres", hit_thres,".json")
 
@@ -71,9 +71,7 @@ func prob_index_table(d *[][] float64, w int, S *[] string,
 	)
 	index_to_json(& index, & path)
 
-	fmt.Println(index)
-
-	return index
+	return & index
 }
 
 func _prob_index_table(index * map[string][]int, start, end int, seeds *[][] string,
@@ -86,7 +84,7 @@ func _prob_index_table(index * map[string][]int, start, end int, seeds *[][] str
 }
 
 func prob_extend(q * string, d *[][] float64, w int, S *[] string,
-                 index * map[string][]int, hit_thres, delta, hsp_thres, e_thres float64) [][][] int {
+                 index * map[string][]int, hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
 
 	hsps := [][][]int{}
 	for q_idx := 0; q_idx < len(* q) - w + 1; q_idx++ {
@@ -116,27 +114,27 @@ func prob_extend(q * string, d *[][] float64, w int, S *[] string,
 			}
 
 			if hsp_score > hsp_thres {
-				hsps = append(hsps, [][]int{hsp_left, hsp_right})
+				hsps = append(hsps, [][]int{* hsp_left, * hsp_right})
 			}
 		}
 	}
-	return hsps
+	return & hsps
 }
 
 func prob_left(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
-	           hit_thres, delta float64) ([]int, float64) {
+	           hit_thres, delta float64) (* []int, float64) {
 
 	return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, -1)
 }
 
 func prob_right(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
-	            hit_thres, delta float64) ([]int, float64) {
+	            hit_thres, delta float64) (* []int, float64) {
 
 	return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, 1)
 }
 
 func _prob_extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
-	             hit_thres, delta float64, step int) ([]int, float64) {
+	             hit_thres, delta float64, step int) (* []int, float64) {
 	
 	max_score := math.Inf(-1)
 	max_q_idx := q_idx
@@ -157,8 +155,8 @@ func _prob_extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] st
 			break
 		}
 	}
-	// return []int{max_q_idx, max_d_idx}, max_score
-	return []int{max_q_idx, max_d_idx}, score
+	return & []int{max_q_idx, max_d_idx}, max_score
+	// return & []int{max_q_idx, max_d_idx}, score
 }
 
 func prob_extend_gap(hsps *[][][] int) {
@@ -219,28 +217,28 @@ func gen_seeds(S *[] string, w int) [][] string {
 	return seeds
 }
 
-func get_prob_seq(fasta string, conf [] float64, S *[] string) [][] float64 {
+func get_prob_seq(fasta string, conf *[] float64, S *[] string) *[][] float64 {
 	seq := seq_from_fasta(fasta)
 	
 	prob_seq := make([][]float64, len(* S))
 	for i := range prob_seq {
-		prob_seq[i] = make([]float64, len(seq))
+		prob_seq[i] = make([]float64, len(* seq))
 	}
 
-	for j := 0; j < len(seq); j++ {
+	for j := 0; j < len(* seq); j++ {
 		for i := 0; i < len(* S); i++ {
-			if string(seq[j]) == (* S)[i] {
-				prob_seq[i][j] = conf[j]
+			if string((* seq)[j]) == (* S)[i] {
+				prob_seq[i][j] = (* conf)[j]
 			
 			} else {
-				prob_seq[i][j] = (1 - conf[j]) / float64((len(* S) - 1))
+				prob_seq[i][j] = (1 - (* conf)[j]) / float64((len(* S) - 1))
 			}
 		}
 	}
-	return prob_seq
+	return & prob_seq
 }
 
-func seq_from_fasta(fasta string) string {
+func seq_from_fasta(fasta string) * string {
 	// dat, err := ioutil.ReadFile(fasta)
 	fin, err := os.Open(fasta)
 	check(err)
@@ -252,10 +250,11 @@ func seq_from_fasta(fasta string) string {
 	seq, err := br.ReadString('\n')
 	check(err)
 
-	return strings.TrimSpace(seq)
+	seq = strings.TrimSpace(seq)
+	return & seq
 }
 
-func index_from_json(path *string) map[string][]int {
+func index_from_json(path * string) * map[string][]int {
 	index := make(map[string][]int)
 	fin, err := os.Open(*path)
 	check(err)
@@ -264,7 +263,7 @@ func index_from_json(path *string) map[string][]int {
 	data, _ := ioutil.ReadAll(fin)
 	fin.Close()
 	json.Unmarshal([]byte(data), & index)
-	return index
+	return & index
 }
 
 func index_to_json(index * map[string][]int, path * string) {
@@ -279,7 +278,7 @@ func index_to_json(index * map[string][]int, path * string) {
 	fout.Close()
 }
 
-func get_d_conf(d_conf string) [] float64 {
+func get_d_conf(d_conf string) *[] float64 {
 	data, err := ioutil.ReadFile(d_conf)
 	check(err)
 
@@ -291,7 +290,7 @@ func get_d_conf(d_conf string) [] float64 {
 			float_conf[i] = f
 		}
 	}
-	return float_conf
+	return & float_conf
 }
 
 func check(e error) {
