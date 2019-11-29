@@ -92,7 +92,7 @@ def get_prob_seq(fasta, fasta_conf, S):
 
     for col in tqdm(range(len(seq))):
         for row in range(len(S)):
-            if S[row] == seq[col]:
+            if seq[col] == S[row]:
                 prob_seq[row, col] = conf[col]
             else:
                 prob_seq[row, col] = (1 - conf[col]) / (len(S) - 1)
@@ -113,7 +113,7 @@ def get_conf(fasta_conf):
     '''
     Return confidence values as list of floats
     '''
-    return tuple(float(conf) for conf in open(fasta_conf, 'r').read().split())
+    return tuple(float(conf) for conf in open(fasta_conf, 'r').read().strip().split())
 
 
 def e_value(hsp_score):

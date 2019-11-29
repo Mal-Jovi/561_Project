@@ -6,7 +6,7 @@ d_conf = 'data/raw/chr22.maf.ancestors.42000000.complete.boreo.conf'
 q = 'query.fa'
 
 # Size of seed
-w = 7
+w = 4
 
 # e-value to determine high scoring pairs (HSPs)
 eps = None # TBD
@@ -23,7 +23,7 @@ score = [
 ]
 
 # Threshold for seed hit: w * log(hit_thres)
-hit_thres = 0.8
+hit_thres = 0.9
 
 # Delta threshold for ungapped extenion: stop ungapped extension if cur score/max score <= delta
 # delta = 0.25

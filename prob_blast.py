@@ -79,6 +79,12 @@ def prob_index_table(d, w, S, hit_thres):
     return index
 
 
+def _prob_index_table(d, w, S, hit_thres, seed):
+    seed = ''.join(seed)
+    indices = utils.prob_find(seed, d, w, S, hit_thres)
+    return (seed, indices) if indices else ()
+
+
 def prob_extend(q, d, w, S, index, delta, hsp_thres, e_thres):
     '''
     Ungapped extension
@@ -156,12 +162,6 @@ def prob_extend_gap():
     Gapped extension
     '''
     pass
-
-
-def _prob_index_table(d, w, S, hit_thres, seed):
-    seed = ''.join(seed)
-    indices = utils.prob_find(seed, d, w, S, hit_thres)
-    return (seed, indices) if indices else ()
 
 
 if __name__ == '__main__':
