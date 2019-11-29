@@ -45,7 +45,7 @@ def prob_blast(q, d, w, S, hit_thres, delta, hsp_thres, e_thres):
     alignments = []
     index = prob_index_table(d, w, S, hit_thres)
     
-    hsps = prob_extend(q, d, w, index, delta, hsp_thres, e_thres)
+    hsps = prob_extend(q, d, w, index, hit_thres, delta, hsp_thres, e_thres)
     prob_extend_gap(hsps)
 
     return alignments
@@ -85,14 +85,14 @@ def _prob_index_table(d, w, S, hit_thres, seed):
     return (seed, indices) if indices else ()
 
 
-def prob_extend(q, d, w, S, index, delta, hsp_thres, e_thres):
+def prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres):
     '''
     Ungapped extension
     '''
     hsps = []
 
     for q_idx in range(len(q) - w + 1):
-        seed = q[i:i+w]
+        seed = q[q_idx:q_idx+w]
 
         try: # In case seed not in index table
             for d_idx in index[seed]:
@@ -127,12 +127,12 @@ def prob_extend(q, d, w, S, index, delta, hsp_thres, e_thres):
 
 
 def prob_left(q_idx, d_idx, q, d, w, S, hit_thres, delta):
-    _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step=-1)
+    return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step=-1)
 
 
 
 def prob_right(q_idx, d_idx, q, d, w, S, hit_thres, delta):
-    _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step=1)
+    return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step=1)
 
 
 
@@ -144,9 +144,9 @@ def _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step):
 
     while 0 < q_idx < len(q) - 1 and 0 < d_idx < d.shape[1] - 1:
         q_idx += step
-        q_idx += step
+        d_idx += step
 
-        score += hit_thres - d[S.index(q[q_idx]), d_idx]
+        score += d[S.index(q[q_idx]), d_idx] - hit_thres
         if score > max_score:
             max_score = score
             max_q_idx = q_idx
@@ -155,7 +155,7 @@ def _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step):
         elif max_score - score > 10:
             break
     
-    return (max_q_idx, max_d_idx), score
+    return (max_q_idx, max_d_idx), max_score
 
 def prob_extend_gap():
     '''

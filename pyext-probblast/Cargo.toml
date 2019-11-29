@@ -1,0 +1,15 @@
+[package]
+name = "pyext-probblast"
+version = "0.1.0"
+authors = ["hung <le.nhthung@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "probblast"
+crate-type = ["dylib"]
+
+[dependencies.cpython]
+version = "0.1"
+features = ["extension-module"]
