@@ -3,7 +3,7 @@
 ## Instructions
 ### Rust version
 In progress.  
-Following this (tutorial)[https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/].
+Following this [tutorial](https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/).
 
 ### Go version
 Parameters such as:
