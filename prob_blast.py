@@ -157,6 +157,7 @@ def _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, step):
     
     return (max_q_idx, max_d_idx), max_score
 
+
 def prob_extend_gap():
     '''
     Gapped extension
