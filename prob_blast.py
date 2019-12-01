@@ -199,9 +199,12 @@ def prob_right_g(l_index, r_index, q_idx, d_idx, q, d, w, S, hit_thres, delta, b
 
     while i < m:
         nw_table[i][0] = nw_table[i - 1][0] - b
+        i += 1
+        
 
     while j < n:
         nw_table[0][j] = nw_table[0][j - 1] - b
+        j+= 1
 
     for i in range(m):
         for j in range(n):
