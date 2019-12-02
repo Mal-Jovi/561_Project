@@ -6,16 +6,19 @@ import (
 	"math"
 	"strings"
 	"github.com/Mal-Jovi/561_Project/utils"
-	"github.com/Mal-Jovi/561_Project/blast/index"
-	"github.com/Mal-Jovi/561_Project/blast/ungapped_extension"
+	"github.com/Mal-Jovi/561_Project/utils/indexing"
+	"github.com/Mal-Jovi/561_Project/utils/ungapped_extension"
+	"github.com/Mal-Jovi/561_Project/utils/gapped_extension"
 )
 
 func main() {
-	w := 4
+	w := 7
 	hit_thres := 0.9
 	delta := 10.
 	// delta := math.Inf(1)
-	hsp_thres := 0.
+	// hsp_thres := 0.
+	// hsp_thres := 1.
+	hsp_thres := 0.5
 	e_thres := 0.
 	S := []string{"A", "T", "G", "C"}
 
@@ -40,7 +43,7 @@ func prob_blast(q * string,
 	index := prob_index_table(d, w, S, hit_thres)	
 	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
 	fmt.Println(* hsps)
-	prob_extend_gap(q, d, w, S, hsps)
+	prob_extend_gap(q, d, S, hsps, hit_thres)
 }
 
 func prob_index_table(d *[][] float64, w int, S *[] string,
@@ -53,7 +56,7 @@ func prob_index_table(d *[][] float64, w int, S *[] string,
 	}
 
 	index := make(map[string] []int)
-	seeds := index.GenSeeds(S, w)
+	seeds := indexing.GenSeeds(S, w)
 
 	// Concurrently index database using 4 cores
 	num_cores := 4
@@ -86,23 +89,27 @@ func _prob_index_table(index * map[string][]int,
 
 	for i := start; i < end; i++ {
 		seed := strings.Join((* seeds)[i], "")
-		(* index)[seed] = index.ProbFind(& seed, d, w, S, hit_thres)
+		(* index)[seed] = indexing.ProbFind(& seed, d, w, S, hit_thres)
 	}
 }
 
-func prob_extend(q * string, d *[][] float64, w int, S *[] string,
-                 index * map[string][]int, hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
+func prob_extend(q *string,
+				 d *[][]float64,
+				 w int,
+				 S *[]string,
+				 index *map[string][]int,
+				 hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
 
 	hsps := [][][]int{}
 
-	for q_idx := 0; q_idx < len(* q) - w + 1; q_idx++ {
-		seed := (* q)[q_idx:q_idx+w]
+	for q_idx := 0; q_idx < len(*q) - w + 1; q_idx++ {
+		seed := (*q)[q_idx : q_idx + w]
 
 		for _, d_idx := range (* index)[seed] {
 			var hsp_score float64
 
-			hsp_left, score_left := ungapped_extension.ProbLeft(q_idx, d_idx, q, d, w, S, hit_thres, delta)
-			hsp_right, score_right := ungapped_extension.ProbRight(q_idx, d_idx, q, d, w, S, hit_thres, delta)
+			hsp_left, score_left := ungapped_extension.Left(q_idx, d_idx, q, d, w, S, hit_thres, delta)
+			hsp_right, score_right := ungapped_extension.Right(q_idx, d_idx, q, d, w, S, hit_thres, delta)
 
 			if score_left == math.Inf(-1) && score_right == math.Inf(-1) {
 				fmt.Println("both")
@@ -122,73 +129,26 @@ func prob_extend(q * string, d *[][] float64, w int, S *[] string,
 			}
 
 			if hsp_score > hsp_thres {
-				hsps = append(hsps, [][]int{* hsp_left, * hsp_right})
+				hsps = append(hsps, [][]int{*hsp_left, *hsp_right})
 			}
 		}
 	}
-	return & hsps
+	return &hsps
 }
 
-func prob_extend_gap(q * string, d *[][] float64, w int, S *[] string, hsps *[][][] int) {
+func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres float64) {
 
-	// substitution_matrix := substitution_matrix(S)
-	// needleman_wunsch(substitution_matrix)
-}
+	substitution_matrix := gapped_extension.SubstitutionMatrix(S)
+	fmt.Println(substitution_matrix)
 
-func needleman_wunsch(seq1, seq2 * string,
-	                  S *[] string,
-					  gap_open_penaty, gap_extend_penalty int,
-					  substitution_matrix *[][] int) {
-
-	N := init_nw(seq1, seq2, gap_open_penaty, gap_extend_penalty)
-	S_idx := S_idx(S)
-
-	for i := 1; i < len(* seq1); i++ {
-		for j := 1; j < len(* seq2); j++ {
-			(* N)[i][j] = utils.Max(
-				(* N)[i-1][j-1] + float64((* substitution_matrix)[(* S_idx)[string((* seq1)[i])]][(* S_idx)[string((* seq2)[j])]]),
-				(* N)[i][j-1] + float64(gap_extend_penalty),
-				(* N)[i-1][j] + float64(gap_extend_penalty),
-			)
+	for i, hsp := range *hsps {
+		// gapped_extension.NeedlemanWunsch(substitution_matrix)
+		gapped_extension.Left(q, d, &hsp, hit_thres, substitution_matrix)
+		gapped_extension.Right(q, d, &hsp, hit_thres, substitution_matrix)
+		
+		if i > 5 {
+			break
 		}
 	}
-}
-
-func S_idx(S *[] string) * map[string]int {
-	S_idx := make(map[string]int)
-
-	for i, word := range * S {
-		S_idx[word] = i
-	}
-	return & S_idx
-}
-
-func init_nw(seq1, seq2 * string, gap_open_penaty, gap_extend_penalty int) *[][] float64 {
-	N := utils.Mat(len(* seq1), len(* seq2))
-	
-	
-	return N
-}
-
-func substitution_matrix(S *[] string) *[][] int {
-	m := utils.MatInt(len(* S), len(* S))
-	
-	match_score := 1
-	mismatch_score := -1
-
-	for i := 0; i < len(* S); i++ {
-		for j := 0; j < len(* S); j++ {
-			if i == j {
-				(* m)[i][j] = match_score
-			
-			} else {
-				(* m)[i][j] = mismatch_score
-			}
-		}
-	}
-	return m
-}
-
-func backtrace(N *[][] float64) {
-
+	fmt.Println(len(*hsps))
 }

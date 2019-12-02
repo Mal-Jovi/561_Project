@@ -5,19 +5,19 @@ import (
 	"github.com/Mal-Jovi/561_Project/utils"
 )
 
-func ProbLeft(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
+func Left(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
 	           hit_thres, delta float64) (* []int, float64) {
 
-	return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, -1)
+	return extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, -1)
 }
 
-func ProbRight(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
+func Right(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
 	            hit_thres, delta float64) (* []int, float64) {
 
-	return _prob_extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, 1)
+	return extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, 1)
 }
 
-func _prob_extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
+func extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] string,
 	  hit_thres, delta float64, step int) (* []int, float64) {
 
 	max_score := math.Inf(-1)
