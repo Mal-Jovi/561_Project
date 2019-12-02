@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"encoding/json"
-	"github.com/Mal-Jovi/561_Project/utils/utils"
+	"github.com/Mal-Jovi/561_Project/utils"
 )
 
 func main() {
@@ -28,7 +28,8 @@ func main() {
 	)
 	q := seq_from_fasta("query.fa")
 
-	prob_blast(q, d, w, & S, hit_thres, delta, hsp_thres, e_thres)
+	// prob_blast(q, d, w, & S, hit_thres, delta, hsp_thres, e_thres)
+	utils.hello()
 }
 
 func prob_blast(q * string, d *[][] float64, w int, S *[] string,
@@ -168,7 +169,7 @@ func _prob_extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] st
 func prob_extend_gap(q * string, d *[][] float64, w int, S *[] string, hsps *[][][] int) {
 
 	substitution_matrix := substitution_matrix(S)
-	needleman_wunsch(substitution_matrix)
+	// needleman_wunsch(substitution_matrix)
 }
 
 func needleman_wunsch(seq1, seq2 * string,
@@ -181,8 +182,10 @@ func needleman_wunsch(seq1, seq2 * string,
 
 	for i := 1; i < len(* seq1); i++ {
 		for j := 1; j < len(* seq2); j++ {
-			(* N)[i][j] = math.Max(
-				(* N)[i-1][j-1] + float64((* substitution_matrix)[(* seq1)[i]][(* seq2)[j]]),
+			(* N)[i][j] = max(
+				(* N)[i-1][j-1] + float64((* substitution_matrix)[(* S_idx)[string((* seq1)[i])]][(* S_idx)[string((* seq2)[j])]]),
+				(* N)[i][j-1] + float64(gap_extend_penalty),
+				(* N)[i-1][j] + float64(gap_extend_penalty),
 			)
 			// break
 		}
@@ -192,8 +195,8 @@ func needleman_wunsch(seq1, seq2 * string,
 func S_idx(S *[] string) * map[string]int {
 	S_idx := make(map[string]int)
 
-	for i, char := range * S {
-		S_idx[char] = i
+	for i, word := range * S {
+		S_idx[word] = i
 	}
 	return & S_idx
 }
