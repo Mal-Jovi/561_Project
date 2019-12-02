@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"encoding/json"
+	"github.com/Mal-Jovi/561_Project/utils/utils"
 )
 
 func main() {
@@ -38,7 +39,7 @@ func prob_blast(q * string, d *[][] float64, w int, S *[] string,
 	index := prob_index_table(d, w, S, hit_thres)	
 	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
 	fmt.Println(* hsps)
-	prob_extend_gap(hsps)
+	prob_extend_gap(q, d, w, S, hsps)
 }
 
 func prob_index_table(d *[][] float64, w int, S *[] string,
@@ -74,8 +75,13 @@ func prob_index_table(d *[][] float64, w int, S *[] string,
 	return & index
 }
 
-func _prob_index_table(index * map[string][]int, start, end int, seeds *[][] string,
-                       d *[][] float64, w int, S *[] string, hit_thres float64)  {
+func _prob_index_table(index * map[string][]int,
+					   start, end int,
+					   seeds *[][] string,
+					   d *[][] float64,
+					   w int,
+					   S *[] string,
+					   hit_thres float64)  {
 
 	for i := start; i < end; i++ {
 		seed := strings.Join((* seeds)[i], "")
@@ -159,8 +165,90 @@ func _prob_extend(q_idx, d_idx int, q * string, d *[][] float64, w int, S *[] st
 	// return & []int{max_q_idx, max_d_idx}, score
 }
 
-func prob_extend_gap(hsps *[][][] int) {
+func prob_extend_gap(q * string, d *[][] float64, w int, S *[] string, hsps *[][][] int) {
 
+	substitution_matrix := substitution_matrix(S)
+	needleman_wunsch(substitution_matrix)
+}
+
+func needleman_wunsch(seq1, seq2 * string,
+	                  S *[] string,
+					  gap_open_penaty, gap_extend_penalty int,
+					  substitution_matrix *[][] int) {
+
+	N := init_nw(seq1, seq2, gap_open_penaty, gap_extend_penalty)
+	S_idx := S_idx(S)
+
+	for i := 1; i < len(* seq1); i++ {
+		for j := 1; j < len(* seq2); j++ {
+			(* N)[i][j] = math.Max(
+				(* N)[i-1][j-1] + float64((* substitution_matrix)[(* seq1)[i]][(* seq2)[j]]),
+			)
+			// break
+		}
+	}
+}
+
+func S_idx(S *[] string) * map[string]int {
+	S_idx := make(map[string]int)
+
+	for i, char := range * S {
+		S_idx[char] = i
+	}
+	return & S_idx
+}
+
+func init_nw(seq1, seq2 * string, gap_open_penaty, gap_extend_penalty int) *[][] float64 {
+	N := mat(len(* seq1), len(* seq2))
+	
+	
+	return N
+}
+
+func substitution_matrix(S *[] string) *[][] int {
+	m := mat_int(len(* S), len(* S))
+	
+	match_score := 1
+	mismatch_score := -1
+
+	for i := 0; i < len(* S); i++ {
+		for j := 0; j < len(* S); j++ {
+			if i == j {
+				(* m)[i][j] = match_score
+			
+			} else {
+				(* m)[i][j] = mismatch_score
+			}
+		}
+	}
+	return m
+}
+
+func max(n1, n2, n3 float64) float64 {
+	return math.Max(math.Max(n1, n2), n3)
+}
+
+func backtrace(N *[][] float64) {
+
+}
+
+func mat(num_rows, num_cols int) *[][] float64 {
+	// Make num_rows x num_cols float64 array
+	mat := make([][]float64, num_rows)
+	
+	for i := range mat {
+		mat[i] = make([]float64, num_cols)
+	}
+	return & mat
+}
+
+func mat_int(num_rows, num_cols int) *[][] int {
+	mat := make([][]int, num_rows)
+	
+	for i := range mat {
+		mat[i] = make([]int, num_cols)
+	}
+	return & mat
 }
 
 func prob_find(
