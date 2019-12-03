@@ -32,7 +32,7 @@ python prob_blast.py
 ```
 
 ## What is it
-An implementation of BLAST local alignment algorithm fit for querying a probabilistic database.
+An implementation of BLAST adapted for querying a probabilistic database sequence.
 
 ## How it works
 ### Database indexing

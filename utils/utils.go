@@ -10,6 +10,23 @@ import (
 	"encoding/json"
 )
 
+func ExpandMat(mat *[][]float64, expand_by int) *[][]float64 {
+	expand_mat_bottom(mat, expand_by)
+	expand_mat_right(mat, expand_by)
+	return mat
+}
+
+func expand_mat_bottom(mat *[][]float64, expand_by int) *[][]float64 {
+	*mat = append(*mat, *Mat(expand_by, len((*mat)[0]))...)
+	return mat
+}
+
+func expand_mat_right(mat *[][]float64, expand_by int) *[][]float64 {
+	for i := 0; i < len(*mat); i++ {
+		(*mat)[i] = append((*mat)[i], make([]float64, expand_by)...)
+	}
+	return mat
+}
 
 func SliceIndex(S *[] string, el string) int {
 	for i := 0; i < len(* S); i++ {
@@ -18,25 +35,26 @@ func SliceIndex(S *[] string, el string) int {
 	return -1
 }
 
-func GetProbSeq(fasta string, conf *[] float64, S *[] string) *[][] float64 {
+func GetProbSeq(fasta string, conf *[]float64, S *[]string) *[][]float64 {
 	seq := SeqFromFasta(fasta)
 	
-	prob_seq := make([][]float64, len(* S))
-	for i := range prob_seq {
-		prob_seq[i] = make([]float64, len(* seq))
-	}
+	// prob_seq := make([][]float64, len(* S))
+	// for i := range prob_seq {
+	// 	prob_seq[i] = make([]float64, len(* seq))
+	// }
+	prob_seq := Mat(len(*S), len(*seq))
 
-	for j := 0; j < len(* seq); j++ {
-		for i := 0; i < len(* S); i++ {
-			if string((* seq)[j]) == (* S)[i] {
-				prob_seq[i][j] = (* conf)[j]
+	for j := 0; j < len(*seq); j++ {
+		for i := 0; i < len(*S); i++ {
+			if string((*seq)[j]) == (*S)[i] {
+				(*prob_seq)[i][j] = (*conf)[j]
 			
 			} else {
-				prob_seq[i][j] = (1 - (* conf)[j]) / float64((len(* S) - 1))
+				(*prob_seq)[i][j] = (1 - (*conf)[j]) / float64((len(*S) - 1))
 			}
 		}
 	}
-	return & prob_seq
+	return prob_seq
 }
 
 func SeqFromFasta(fasta string) * string {
@@ -70,23 +88,23 @@ func GetDConf(d_conf string) *[] float64 {
 	return & float_conf
 }
 
-func Mat(num_rows, num_cols int) *[][] float64 {
+func Mat(num_rows, num_cols int) *[][]float64 {
 	// Make num_rows x num_cols float64 array
 	mat := make([][]float64, num_rows)
 	
 	for i := range mat {
 		mat[i] = make([]float64, num_cols)
 	}
-	return & mat
+	return &mat
 }
 
-func MatInt(num_rows, num_cols int) *[][] int {
+func MatInt(num_rows, num_cols int) *[][]int {
 	mat := make([][]int, num_rows)
 	
 	for i := range mat {
 		mat[i] = make([]int, num_cols)
 	}
-	return & mat
+	return &mat
 }
 
 func IndexFromJson(path * string) * map[string][]int {

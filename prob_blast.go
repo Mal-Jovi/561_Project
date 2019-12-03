@@ -18,7 +18,8 @@ func main() {
 	// delta := math.Inf(1)
 	// hsp_thres := 0.
 	// hsp_thres := 1.
-	hsp_thres := 0.5
+	hsp_thres := 5.
+	// hsp_thres := 0.5
 	e_thres := 0.
 	S := []string{"A", "T", "G", "C"}
 
@@ -43,7 +44,7 @@ func prob_blast(q * string,
 	index := prob_index_table(d, w, S, hit_thres)	
 	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
 	fmt.Println(* hsps)
-	prob_extend_gap(q, d, S, hsps, hit_thres)
+	prob_extend_gap(q, d, S, hsps, hit_thres, delta)
 }
 
 func prob_index_table(d *[][] float64, w int, S *[] string,
@@ -136,17 +137,21 @@ func prob_extend(q *string,
 	return &hsps
 }
 
-func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres float64) {
+func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres, delta float64) {
 
 	substitution_matrix := gapped_extension.SubstitutionMatrix(S)
 	fmt.Println(substitution_matrix)
 
-	for i, hsp := range *hsps {
+	// for i, hsp := range *hsps {
+	for i := 0; i < len(*hsps); i++ {
+		// hsp := &(*hsps)[i]
+		// fmt.Println(*hsp)
 		// gapped_extension.NeedlemanWunsch(substitution_matrix)
-		gapped_extension.Left(q, d, &hsp, hit_thres, substitution_matrix)
-		gapped_extension.Right(q, d, &hsp, hit_thres, substitution_matrix)
+		gapped_extension.Left(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+		gapped_extension.Right(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+		// gapped_extension.Extend(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
 		
-		if i > 5 {
+		if i > 1 {
 			break
 		}
 	}

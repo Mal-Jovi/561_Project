@@ -3,15 +3,44 @@ package gapped_extension
 import (
 	"fmt"
 	"github.com/Mal-Jovi/561_Project/utils"
+	"github.com/kr/pretty"
 )
 
-func Left(q *string, d *[][]float64, hsp *[][]int, hit_thres float64, substitution_matrix *[][]int) {
-	fmt.Println(*hsp)
+func Left(q *string, d *[][]float64, hsp *[][]int, hit_thres, delta float64, substitution_matrix *[][]int) {
+	q_idx := (*hsp)[0][0] - 1
+	d_idx := (*hsp)[0][1] - 1
+	extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, -1)
+
+	// N := [][]float64{}
+	// fmt.Println(N)
+	// N = append(N, []float64{1.,2.,3.,4.,5.})
+	// N = append(N, []float64{1.,2.,3.,4.,5.})
+	expand_by := 1
+
+	// N := make([][]int, 0)
+	N := utils.Mat(1, 1)
+	for i := 0; i < 3; i++ {
+		fmt.Println("i: ", i)
+		utils.ExpandMat(N, expand_by)
+		// fmt.Println(N)
+		pretty.Print(N)
+		// N = append(N, make([]int, 0))
+		// fmt.Println(N)
+	}
 }
 
-func Right(q *string, d *[][]float64, hsp *[][]int, hit_thres float64, substitution_matrix *[][]int) {}
+func Right(q *string, d *[][]float64, hsp *[][]int, hit_thres, delta float64, substitution_matrix *[][]int) {
+	// q_idx := (*hsp)[1][0] - 1
+	// d_idx := (*hsp)[1][1] - 1
+	// extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, 1)
+}
 
-func extend() {}
+func extend(q_idx, d_idx int, q *string, d *[][]float64, hit_thres, delta float64, substitution_matrix *[][]int, step int) {
+	if q_idx < 0 || q_idx >= len(*q) || q_idx < 0 || q_idx >= len(*d) {
+		// out of bounds
+		return
+	}
+}
 
 func NeedlemanWunsch(seq1, seq2 *string,
 					 S *[]string,
