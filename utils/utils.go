@@ -11,19 +11,37 @@ import (
 )
 
 func ExpandMat(mat *[][]float64, expand_by int) *[][]float64 {
-	expand_mat_bottom(mat, expand_by)
-	expand_mat_right(mat, expand_by)
+	ExpandMatBottom(mat, expand_by)
+	ExpandMatRight(mat, expand_by)
 	return mat
 }
 
-func expand_mat_bottom(mat *[][]float64, expand_by int) *[][]float64 {
+func ExpandMatBottom(mat *[][]float64, expand_by int) *[][]float64 {
 	*mat = append(*mat, *Mat(expand_by, len((*mat)[0]))...)
 	return mat
 }
 
-func expand_mat_right(mat *[][]float64, expand_by int) *[][]float64 {
+func ExpandMatRight(mat *[][]float64, expand_by int) *[][]float64 {
 	for i := 0; i < len(*mat); i++ {
 		(*mat)[i] = append((*mat)[i], make([]float64, expand_by)...)
+	}
+	return mat
+}
+
+func ExpandMatInt(mat *[][]int, expand_by int) *[][]int {
+	ExpandMatIntBottom(mat, expand_by)
+	ExpandMatIntRight(mat, expand_by)
+	return mat
+}
+
+func ExpandMatIntBottom(mat *[][]int, expand_by int) *[][]int {
+	*mat = append(*mat, *MatInt(expand_by, len((*mat)[0]))...)
+	return mat
+}
+
+func ExpandMatIntRight(mat *[][]int, expand_by int) *[][]int {
+	for i := 0; i < len(*mat); i++ {
+		(*mat)[i] = append((*mat)[i], make([]int, expand_by)...)
 	}
 	return mat
 }
@@ -33,6 +51,22 @@ func SliceIndex(S *[] string, el string) int {
 		if (* S)[i] == el { return i }
 	}
 	return -1
+}
+
+func PrettyProbSeg(d *[][]float64, start, end int, S *[]string, hit_thres float64) *string {
+	s := ""
+	for j := start; j < end; j++ {
+		for i := 0; i < len(*d); i++ {
+			if (*d)[i][j] >= hit_thres {
+				s += (*S)[i]
+				break
+			}
+			if i == len(*S) - 1 {
+				s += "/"
+			}
+		}
+	}
+	return &s
 }
 
 func GetProbSeq(fasta string, conf *[]float64, S *[]string) *[][]float64 {
@@ -95,6 +129,7 @@ func Mat(num_rows, num_cols int) *[][]float64 {
 	for i := range mat {
 		mat[i] = make([]float64, num_cols)
 	}
+	// mat := [num_rows][num_cols]float64{}
 	return &mat
 }
 
@@ -131,8 +166,18 @@ func IndexToJson(index * map[string][]int, path * string) {
 	fout.Close()
 }
 
-func Max(n1, n2, n3 float64) float64 {
-	return math.Max(math.Max(n1, n2), n3)
+func Max(nums ...float64) (float64, int) {
+	// return math.Max(math.Max(a, b), c)
+	max := math.Inf(-1)
+	argmax := -1
+
+	for i, num := range nums {
+		if num > max {
+			max = num
+			argmax = i
+		}
+	}
+	return max, argmax
 }
 
 func check(e error) {

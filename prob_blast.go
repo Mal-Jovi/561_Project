@@ -139,21 +139,28 @@ func prob_extend(q *string,
 
 func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres, delta float64) {
 
-	substitution_matrix := gapped_extension.SubstitutionMatrix(S)
-	fmt.Println(substitution_matrix)
+	// substitution_matrix := gapped_extension.SubstitutionMatrix(S)
+	S_idx := gapped_extension.SIdx(S)
+
+	// fmt.Println(substitution_matrix)
 
 	// for i, hsp := range *hsps {
 	for i := 0; i < len(*hsps); i++ {
 		// hsp := &(*hsps)[i]
 		// fmt.Println(*hsp)
 		// gapped_extension.NeedlemanWunsch(substitution_matrix)
-		gapped_extension.Left(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
-		gapped_extension.Right(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+
+		// gapped_extension.Left(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+		// gapped_extension.Right(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+
 		// gapped_extension.Extend(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+		// gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, substitution_matrix, 1)
 		
-		if i > 1 {
-			break
-		}
+		gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, 1)
+		// gapped_extension.Extend(3, 6, q, d, S, S_idx, hit_thres, -1)
+		// gapped_extension.Test()
+		
+		break
 	}
 	fmt.Println(len(*hsps))
 }

@@ -1,10 +1,13 @@
 # COMP 561 Project: Probabilistic BLAST
 
+## What is it
+An implementation of BLAST adapted for querying a probabilistic database sequence.
+
 ## Instructions
 ### Rust version
 Motivation: Rust is even faster than Go.  
 In progress.  
-Following this [tutorial](https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/).
+Following this [tutorial](https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/): optimize Python code with Rust.
 
 ### Go version
 Parameters such as:
@@ -30,9 +33,6 @@ To run, enter:
 ```
 python prob_blast.py
 ```
-
-## What is it
-An implementation of BLAST adapted for querying a probabilistic database sequence.
 
 ## How it works
 ### Database indexing
