@@ -16,7 +16,9 @@ type Params struct {
 	HitThres float64
 	Delta float64
 	HspThres float64
-	S []string
+	S *[]string
+
+	EThres float64
 }
 
 func main() {
@@ -25,9 +27,9 @@ func main() {
 		0.9,
 		2.5,
 		5.,
-		[]string{"A", "T", "G", "C"},
+		&[]string{"A", "T", "G", "C"},
+		0.
 	}
-	fmt.Println(params)
 	w := 7
 	hit_thres := 0.9
 	// delta := 10.
