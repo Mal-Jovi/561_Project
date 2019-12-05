@@ -3,9 +3,16 @@ package gapped_extension
 import (
 	"fmt"
 	"math"
-	"github.com/kr/pretty"
+	// "github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
 )
+
+type Alignment struct {
+	QAligned *string
+	DAligned *string
+	HspScore float64
+	Score float64
+}
 
 // Gapped extension by incrementally expanding Needleman-Wunsch
 // dynamic programming table
@@ -20,7 +27,7 @@ import (
 // 	hit_thres: Probability threshold
 // 	substitution_matrix: Return match and mismatch scores for each character pairing
 // 	direction: Direction of extension; 1 for left-right, -1 for right-left
-func Extend(q_idx, d_idx int,
+func extend(q_idx, d_idx int,
 			q *string,
 			d *[][]float64,
 			S *[]string,
@@ -28,11 +35,20 @@ func Extend(q_idx, d_idx int,
 			hit_thres,
 			delta float64,
 			// substitution_matrix *[][]int,
-			direction int) {
+			direction int) (*string, *string) {
 
-	if !preconditions(q_idx, d_idx, q, d, direction) {
+	var q_aligned *string
+	var d_aligned *string
+	
+	if !preconditions(q_idx, d_idx, q, d) {
 		fmt.Println("SAD")
-		return
+		return q_aligned, d_aligned
+	}
+
+	if direction >= 0 {
+		direction = 1
+	} else {
+		direction = -1
 	}
 	
 	gap_penalty := 1.
@@ -42,23 +58,75 @@ func Extend(q_idx, d_idx int,
 	
 	q_len, d_len := q_len_d_len(q_idx, d_idx, q, d, direction)
 
-	if direction == 1 {
-		fmt.Println("q seg:", (*q)[q_idx:q_idx + q_len])
-		fmt.Println("d seg:", *utils.PrettyProbSeg(d, d_idx, d_idx + d_len, S, hit_thres))
+	if direction >= 0 {
+		fmt.Println("extending right")
+		// fmt.Println("q seg:", (*q)[q_idx:q_idx + q_len])
+		// fmt.Println("d seg:", *utils.PrettyProbSeg(d, d_idx, d_idx + d_len, S, hit_thres))
 	} else {
 		fmt.Println("extending left")
-		fmt.Println("q seg:", (*q)[:q_idx + 1])
-		fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, S, hit_thres))
+		// fmt.Println("q seg:", (*q)[:q_idx + 1])
+		// fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, S, hit_thres))
 	}
 
 	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, gap_penalty, hit_thres, delta, direction)
-	// alignment := backtrace(backptrs, i_end, j_end, q_idx, d_idx, q, d, direction)
-	backtrace(backptrs, i_end, j_end, q_idx, d_idx, q, d, direction)
+	fmt.Println("exited fill()")
+	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
+	// traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
 	
-	fmt.Println("NW table:")
-	pretty.Println(*N)
-	fmt.Println("backpointers:")
-	pretty.Println(*backptrs)
+	// fmt.Println("NW table:")
+	// pretty.Println(*N)
+	// fmt.Println("backpointers:")
+	// pretty.Println(*backptrs)
+	// fmt.Println("alignment:")
+	// fmt.Println(*q_aligned)
+	// fmt.Println(*d_aligned)
+
+	return q_aligned, d_aligned
+}
+
+func Extend(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) *Alignment {
+	var alignment Alignment
+
+	left_q_aligned, left_d_aligned := left(hsp, q, d, S, S_idx, hit_thres, delta)
+	right_q_aligned, right_d_aligned := right(hsp, q, d, S, S_idx, hit_thres, delta)
+	q_aligned, d_aligned := middle(hsp, q, d, S)
+
+	if left_q_aligned == nil || left_d_aligned == nil {
+		fmt.Println("didn't extend left")
+	} else {
+		q_aligned = *left_q_aligned + q_aligned
+		*d_aligned = *left_d_aligned + *d_aligned
+	}
+
+	if right_q_aligned == nil || right_d_aligned == nil {
+		fmt.Println("didn't extend right")
+	} else {
+		q_aligned += *right_q_aligned
+		*d_aligned += *right_d_aligned
+	}
+
+	alignment.QAligned = &q_aligned
+	alignment.DAligned = d_aligned
+	// return &q_aligned, d_aligned
+	return &alignment
+}
+
+// func Left(q *string, d *[][]float64, hsp *[][]int, hit_thres, delta float64, substitution_matrix *[][]int) {
+func left(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
+	q_idx := (*hsp)[0][0] - 1
+	d_idx := (*hsp)[0][1] - 1
+	// extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, -1)
+	return extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, -1)
+}
+
+func right(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
+	q_idx := (*hsp)[1][0] + 1
+	d_idx := (*hsp)[1][1] + 1
+	return extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, 1)
+}
+
+func middle(hsp *[][]int, q *string, d *[][]float64, S *[]string) (string, *string) {
+	return (*q)[(*hsp)[0][0] : (*hsp)[1][0] + 1], utils.PrettyProbSeg(d, (*hsp)[0][1], (*hsp)[1][1] + 1, S, 0.)
 }
 
 func fill(N *[][]float64,
@@ -72,6 +140,9 @@ func fill(N *[][]float64,
 		  delta float64,
 		  direction int) (int, int) {
 	
+	var i_end int
+	var j_end int
+
 	has_exceeded_delta := false
 	i_max, j_max := -1, -1
 
@@ -80,7 +151,7 @@ func fill(N *[][]float64,
 		bottom_i_max, bottom_j_max := -1, -1
 		right_i_max, right_j_max := -1, -1
 
-		// Expand, then initialize top row and/or left column
+		// Expand, initialize top row and/or left column, then fill cells on layer
 		if layer < q_len {
 			bottom_i_max, bottom_j_max = fill_bottom(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, hit_thres, direction)
 		}
@@ -100,15 +171,19 @@ func fill(N *[][]float64,
 			break
 		}
 	}
-	fmt.Println("i_max:", i_max)
-	fmt.Println("j_max:", j_max)
 	if has_exceeded_delta {
-		return i_max, j_max
+		i_end = i_max
+		j_end = j_max
+		fmt.Println("i_max:", i_max)
+		fmt.Println("j_max:", j_max)
+	} else {
+		i_end = q_len
+		j_end = d_len
+		fmt.Println("last cell:", (*N)[q_len][d_len])
+		fmt.Println("q_len:", q_len)
+		fmt.Println("d_len:", d_len)
 	}
-	fmt.Println("last cell:", (*N)[q_len][d_len])
-	fmt.Println("q_len:", q_len)
-	fmt.Println("d_len:", d_len)
-	return q_len, d_len
+	return i_end, j_end
 }
 
 // func cell_max(N *[][]float64, layer_i_max, layer_j_max int) (int, int) {
@@ -157,8 +232,16 @@ func fill_bottom(N *[][]float64,
 
 	// Fill new bottom row
 	for col := 1; col < len((*N)[0]); col++ {
-		cell_val := nw_recurrence(N, backptrs, layer+1, col, q_idx + layer*direction, d_idx + (col-1)*direction, q, d, S_idx, gap_penalty, hit_thres)
-
+		cell_val := nw_recurrence(
+			N, backptrs,
+			layer+1, col,
+			q_idx + layer*direction,
+			d_idx + (col-1)*direction,
+			q, d,
+			S_idx,
+			gap_penalty,
+			hit_thres,
+		)
 		if cell_val > max_val {
 			max_val = cell_val
 			j_max = col
@@ -191,8 +274,16 @@ func fill_right(N *[][]float64,
 
 	// Fill new rightmost column
 	for row := 1; row < len(*N); row++ {
-		cell_val := nw_recurrence(N, backptrs, row, layer+1, q_idx + (row-1)*direction, d_idx + layer*direction, q, d, S_idx, gap_penalty, hit_thres)
-
+		cell_val := nw_recurrence(
+			N, backptrs,
+			row, layer+1,
+			q_idx + (row-1)*direction,
+			d_idx + layer*direction,
+			q, d,
+			S_idx,
+			gap_penalty,
+			hit_thres,
+		)
 		if cell_val > max_val {
 			max_val = cell_val
 			i_max = row
@@ -236,19 +327,19 @@ func sub_mat(q_idx, d_idx int,
 			 S_idx *map[string]int,
 			 hit_thres float64) float64 {
 				 
-	match_score := 1.
-	mismatch_score := -1.
+	// match_score := 1.
+	// mismatch_score := -1.
 
 	char := string((*q)[q_idx])
 	char_idx := (*S_idx)[char]
 	
 	if (*d)[char_idx][d_idx] >= hit_thres {
-		return match_score
-		// return (*d)[char_idx][d_idx]
+		// return match_score
+		return (*d)[char_idx][d_idx]
 	
 	} else {
-		return mismatch_score
-		// return -(hit_thres - (*d)[char_idx][d_idx])
+		// return mismatch_score
+		return -(hit_thres - (*d)[char_idx][d_idx])
 	}
 }
 
@@ -256,23 +347,18 @@ func q_len_d_len(q_idx, d_idx int, q *string, d *[][]float64, direction int) (in
 	var q_len int
 	var d_len int
 
-	if direction == 1 {
+	if direction >= 0 {
 		q_len = len(*q) - q_idx
 		d_len = len((*d)[0]) - d_idx
 	} else {
-		// direction == -1
+		// direction < 0
 		q_len = q_idx + 1
 		d_len = d_idx + 1
 	}
 	return q_len, d_len
 }
 
-func preconditions(q_idx, d_idx int, q *string, d *[][]float64, direction int) bool {
-	if direction != 1 && direction != -1 {
-		// step has to be 1 or -1
-		fmt.Println("wrong direction")
-		return false
-	}
+func preconditions(q_idx, d_idx int, q *string, d *[][]float64) bool {
 	if q_idx < 0 || q_idx >= len(*q) || q_idx < 0 || q_idx >= len((*d)[0]) {
 		// out of bounds
 		fmt.Println("out of bounds")
@@ -288,35 +374,101 @@ func max(a, b int) int {
 	return b
 }
 
-// func Left(q *string, d *[][]float64, hsp *[][]int, hit_thres, delta float64, substitution_matrix *[][]int) {
-func Left(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) {
-	q_idx := (*hsp)[0][0] - 1
-	d_idx := (*hsp)[0][1] - 1
-	// extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, -1)
-	Extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, -1)
-}
-
-func Right(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) {
-	q_idx := (*hsp)[1][0] + 1
-	d_idx := (*hsp)[1][1] + 1
-	Extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, 1)
-}
-
-// backtrace
+// traceback
 //
 // Recover Needleman-Wunsch alignment
-func backtrace(backptrs *[][]int,
+func traceback(backptrs *[][]int,
 			   i_end, j_end,
 			   q_idx, d_idx int,
 			   q *string,
 			   d *[][]float64,
-			   direcion int) *[]string {
+			   S *[]string,
+			   hit_thres float64,
+			   direction int) (*string, *string) {
 
-	// const diag = 0
-	// const left = 1
-	// const top = 2
-	q_prime, d_prime := "", ""
-	return &[]string{q_prime, d_prime}
+	const diag = 0
+	const left = 1
+	const top = 2
+
+	q_aligned, d_aligned := "", ""
+
+	var d_seg *string
+
+	if direction > 0 {
+		d_seg = utils.PrettyProbSeg(d, d_idx, d_idx + j_end, S, 0.)
+	} else {
+		d_seg = utils.PrettyProbSeg(d, d_idx - j_end + 1, d_idx + 1, S, 0.)
+	}
+
+	// fmt.Println("d_seg:", *d_seg)
+
+	// q_idx + i_end*direction
+	// d_idx + j_end*direction
+
+	if direction >= 0 {
+		q_idx += i_end - 1
+		d_idx = j_end - 1
+	} else {
+		q_idx -= i_end - 1
+		d_idx = 0
+	}
+
+	for i_end > 0 && j_end > 0 {
+		switch (*backptrs)[i_end][j_end] {
+		case diag:
+			traceback_diag(q_idx, d_idx, &q_aligned, &d_aligned, q, d_seg, direction)
+			i_end--; j_end--
+			q_idx -= direction
+			d_idx -= direction
+		case left:
+			traceback_left(q_idx, d_idx, &q_aligned, &d_aligned, q, d_seg, direction)
+			j_end--
+			d_idx -= direction
+		case top:
+			traceback_top(q_idx, d_idx, &q_aligned, &d_aligned, q, d_seg, direction)
+			i_end--
+			q_idx -= direction
+		}
+	}
+	for ; j_end > 0; j_end-- {
+		traceback_left(q_idx, d_idx, &q_aligned, &d_aligned, q, d_seg, direction)
+		d_idx -= direction
+	}
+	for ; i_end > 0; i_end-- {
+		traceback_top(q_idx, d_idx, &q_aligned, &d_aligned, q, d_seg, direction)
+		q_idx -= direction
+	}
+	return &q_aligned, &d_aligned
+}
+
+func traceback_diag(q_idx, d_idx int, q_aligned, d_aligned, q, d_seg *string, direction int) {
+	if direction >= 0 {
+		*q_aligned = string((*q)[q_idx]) + *q_aligned
+		*d_aligned = string((*d_seg)[d_idx]) + *d_aligned
+	} else {
+		*q_aligned += string((*q)[q_idx])
+		*d_aligned += string((*d_seg)[d_idx])
+	}
+}
+
+func traceback_left(q_idx, d_idx int, q_aligned, d_aligned, q, d_seg *string, direction int) {
+	if direction >= 0 {
+		*q_aligned = "-" + *q_aligned
+		*d_aligned = string((*d_seg)[d_idx]) + *d_aligned
+	} else {
+		*q_aligned += "-"
+		*d_aligned += string((*d_seg)[d_idx])
+	}
+}
+
+func traceback_top(q_idx, d_idx int, q_aligned, d_aligned, q, d_seg *string, direction int) {
+	if direction >= 0 {
+		*q_aligned = string((*q)[q_idx]) + *q_aligned
+		*d_aligned = "-" + *d_aligned
+	} else {
+		*q_aligned += string((*q)[q_idx])
+		*d_aligned += "-"
+	}
 }
 
 // func SubstitutionMatrix(S *[]string) *[][]int {

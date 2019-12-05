@@ -53,17 +53,24 @@ func SliceIndex(S *[] string, el string) int {
 	return -1
 }
 
-func PrettyProbSeg(d *[][]float64, start, end int, S *[]string, hit_thres float64) *string {
+func PrettyProbSeg(prob_seq *[][]float64, start, end int, S *[]string, hit_thres float64) *string {
 	s := ""
+
 	for j := start; j < end; j++ {
-		for i := 0; i < len(*d); i++ {
-			if (*d)[i][j] >= hit_thres {
-				s += (*S)[i]
-				break
+		max_val := math.Inf(-1)
+		i_max := -1
+
+		for i := 0; i < len(*prob_seq); i++ {
+			if (*prob_seq)[i][j] >= max_val {
+				max_val = (*prob_seq)[i][j]
+				i_max = i
 			}
-			if i == len(*S) - 1 {
-				s += "/"
-			}
+		}
+
+		if (*prob_seq)[i_max][j] >= hit_thres {
+			s += (*S)[i_max]
+		} else {
+			s += "/"
 		}
 	}
 	return &s

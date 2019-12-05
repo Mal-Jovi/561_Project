@@ -11,7 +11,23 @@ import (
 	"github.com/Mal-Jovi/561_Project/utils/gapped_extension"
 )
 
+type Params struct {
+	W int // word size
+	HitThres float64
+	Delta float64
+	HspThres float64
+	S []string
+}
+
 func main() {
+	params := Params{
+		7,
+		0.9,
+		2.5,
+		5.,
+		[]string{"A", "T", "G", "C"},
+	}
+	fmt.Println(params)
 	w := 7
 	hit_thres := 0.9
 	// delta := 10.
@@ -28,11 +44,11 @@ func main() {
 	d := utils.GetProbSeq(
 		"data/raw/chr22.maf.ancestors.42000000.complete.boreo.fa",
 		utils.GetDConf("data/raw/chr22.maf.ancestors.42000000.complete.boreo.conf"),
-		& S,
+		&S,
 	)
 	q := utils.SeqFromFasta("query.fa")
 
-	prob_blast(q, d, w, & S, hit_thres, delta, hsp_thres, e_thres)
+	prob_blast(q, d, w, &S, hit_thres, delta, hsp_thres, e_thres)
 }
 
 func prob_blast(q * string,
@@ -45,7 +61,7 @@ func prob_blast(q * string,
 	// index := prob_index_table(d, w, S, hit_thres)
 	index := prob_index_table(d, w, S, hit_thres)	
 	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
-	fmt.Println(* hsps)
+	fmt.Println(*hsps)
 	prob_extend_gap(q, d, S, hsps, hit_thres, delta)
 }
 
@@ -115,19 +131,19 @@ func prob_extend(q *string,
 			hsp_right, score_right := ungapped_extension.Right(q_idx, d_idx, q, d, w, S, hit_thres, delta)
 
 			if score_left == math.Inf(-1) && score_right == math.Inf(-1) {
-				fmt.Println("both")
+				// fmt.Println("both")
 				continue
 			
 			} else if score_left == math.Inf(-1) {
-				fmt.Println("left")
+				// fmt.Println("left")
 				hsp_score = score_right
 			
 			} else if score_right == math.Inf(-1) {
-				fmt.Println("right")
+				// fmt.Println("right")
 				hsp_score = score_left
 			
 			} else {
-				fmt.Println("none")
+				// fmt.Println("none")
 				hsp_score = score_left + score_right
 			}
 
@@ -148,6 +164,7 @@ func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hi
 
 	// for i, hsp := range *hsps {
 	for i := 0; i < len(*hsps); i++ {
+		fmt.Println("hsp", i)
 		// hsp := &(*hsps)[i]
 		// fmt.Println(*hsp)
 		// gapped_extension.NeedlemanWunsch(substitution_matrix)
@@ -159,10 +176,14 @@ func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hi
 		// gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, substitution_matrix, 1)
 		
 		// gapped_extension.Extend(len(*q) - 5, len((*d)[0]) - 10, q, d, S, S_idx, hit_thres, delta, 1)
-		gapped_extension.Extend(5, 10, q, d, S, S_idx, hit_thres, delta, -1)
+		// gapped_extension.Extend(3, 6, q, d, S, S_idx, hit_thres, delta, -1)
 		// gapped_extension.Test()
+
+		alignment :=gapped_extension.Extend(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
+		fmt.Println(*alignment.QAligned)
+		fmt.Println(*alignment.DAligned)
 		
-		break
+		// break
 	}
 	fmt.Println(len(*hsps))
 }
