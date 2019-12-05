@@ -10,6 +10,7 @@ func extend(q_idx, d_idx int,
 			hit_thres, delta float64,
 			step int) (*[]int, float64) {
 
+	has_exceeded_delta := false
 	max_score := math.Inf(-1)
 	max_q_idx := q_idx
 	max_d_idx := d_idx
@@ -30,16 +31,20 @@ func extend(q_idx, d_idx int,
 			score -= hit_thres - prob
 		}
 
-		if score > max_score {
+		if score >= max_score {
 			max_score = score
 			max_q_idx = q_idx
 			max_d_idx = d_idx
 
-		} else if max_score - score > delta {
+		} else if math.Abs(max_score - score) > delta {
+			has_exceeded_delta = true
 			break
 		}
 	}
-	return &[]int{max_q_idx, max_d_idx}, max_score
+	if has_exceeded_delta {
+		return &[]int{max_q_idx, max_d_idx}, max_score
+	}
+	return &[]int{q_idx, d_idx}, score
 // return & []int{max_q_idx, max_d_idx}, score
 }
 

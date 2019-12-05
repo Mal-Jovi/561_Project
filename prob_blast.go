@@ -14,7 +14,9 @@ import (
 func main() {
 	w := 7
 	hit_thres := 0.9
-	delta := 10.
+	// delta := 10.
+	// delta := 5.
+	delta := 2.5
 	// delta := math.Inf(1)
 	// hsp_thres := 0.
 	// hsp_thres := 1.
@@ -150,14 +152,14 @@ func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hi
 		// fmt.Println(*hsp)
 		// gapped_extension.NeedlemanWunsch(substitution_matrix)
 
-		// gapped_extension.Left(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
-		// gapped_extension.Right(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
+		// gapped_extension.Left(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
+		// gapped_extension.Right(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
 
 		// gapped_extension.Extend(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
 		// gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, substitution_matrix, 1)
 		
-		gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, 1)
-		// gapped_extension.Extend(3, 6, q, d, S, S_idx, hit_thres, -1)
+		// gapped_extension.Extend(len(*q) - 5, len((*d)[0]) - 10, q, d, S, S_idx, hit_thres, delta, 1)
+		gapped_extension.Extend(5, 10, q, d, S, S_idx, hit_thres, delta, -1)
 		// gapped_extension.Test()
 		
 		break
