@@ -5,14 +5,8 @@ import (
 	"math"
 	// "github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
+	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
-
-type Alignment struct {
-	QAligned *string
-	DAligned *string
-	HspScore float64
-	Score float64
-}
 
 // Gapped extension by incrementally expanding Needleman-Wunsch
 // dynamic programming table
@@ -27,22 +21,14 @@ type Alignment struct {
 // 	hit_thres: Probability threshold
 // 	substitution_matrix: Return match and mismatch scores for each character pairing
 // 	direction: Direction of extension; 1 for left-right, -1 for right-left
-func extend(q_idx, d_idx int,
-			q *string,
-			d *[][]float64,
-			S *[]string,
-			S_idx *map[string]int,
-			hit_thres,
-			delta float64,
-			// substitution_matrix *[][]int,
-			direction int) (*string, *string) {
+func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, params *Params, direction int) (*string, *string, float64) {
 
 	var q_aligned *string
 	var d_aligned *string
 	
 	if !preconditions(q_idx, d_idx, q, d) {
-		fmt.Println("SAD")
-		return q_aligned, d_aligned
+		// fmt.Println("SAD")
+		return q_aligned, d_aligned, 0.
 	}
 
 	if direction >= 0 {
@@ -65,12 +51,12 @@ func extend(q_idx, d_idx int,
 	} else {
 		fmt.Println("extending left")
 		// fmt.Println("q seg:", (*q)[:q_idx + 1])
-		// fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, S, hit_thres))
+		// fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, &params.S, params.HitThres))
 	}
 
-	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, gap_penalty, hit_thres, delta, direction)
+	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, params, gap_penalty, direction)
 	fmt.Println("exited fill()")
-	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
+	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, &params.S, params.HitThres, direction)
 	// traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
 	
 	// fmt.Println("NW table:")
@@ -81,15 +67,16 @@ func extend(q_idx, d_idx int,
 	// fmt.Println(*q_aligned)
 	// fmt.Println(*d_aligned)
 
-	return q_aligned, d_aligned
+	return q_aligned, d_aligned, (*N)[i_end][j_end]
 }
 
-func Extend(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) *Alignment {
+// func Extend(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) Alignment {
+func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) Alignment {
 	var alignment Alignment
 
-	left_q_aligned, left_d_aligned := left(hsp, q, d, S, S_idx, hit_thres, delta)
-	right_q_aligned, right_d_aligned := right(hsp, q, d, S, S_idx, hit_thres, delta)
-	q_aligned, d_aligned := middle(hsp, q, d, S)
+	left_q_aligned, left_d_aligned, left_score := left(hsp, q, d, S_idx, params)
+	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
+	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
 
 	if left_q_aligned == nil || left_d_aligned == nil {
 		fmt.Println("didn't extend left")
@@ -105,28 +92,36 @@ func Extend(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[str
 		*d_aligned += *right_d_aligned
 	}
 
-	alignment.QAligned = &q_aligned
-	alignment.DAligned = d_aligned
+	alignment.QAligned = q_aligned
+	alignment.DAligned = *d_aligned
+	alignment.Hsp = *hsp
+	alignment.Score = left_score + right_score + hsp.Score
 	// return &q_aligned, d_aligned
-	return &alignment
+	return alignment
 }
 
-// func Left(q *string, d *[][]float64, hsp *[][]int, hit_thres, delta float64, substitution_matrix *[][]int) {
-func left(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
-	q_idx := (*hsp)[0][0] - 1
-	d_idx := (*hsp)[0][1] - 1
+// func left(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
+func left(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+	// q_idx := (*hsp)[0][0] - 1
+	// d_idx := (*hsp)[0][1] - 1
+	q_idx := hsp.QIdxLeft - 1
+	d_idx := hsp.DIdxLeft - 1
 	// extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, -1)
-	return extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, -1)
+	return extend(q_idx, d_idx, q, d, S_idx, params, -1)
 }
 
-func right(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
-	q_idx := (*hsp)[1][0] + 1
-	d_idx := (*hsp)[1][1] + 1
-	return extend(q_idx, d_idx, q, d, S, S_idx, hit_thres, delta, 1)
+func right(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+	// q_idx := (*hsp)[1][0] + 1
+	// d_idx := (*hsp)[1][1] + 1
+	q_idx := hsp.QIdxRight + 1
+	d_idx := hsp.DIdxRight + 1
+	return extend(q_idx, d_idx, q, d, S_idx, params, 1)
 }
 
-func middle(hsp *[][]int, q *string, d *[][]float64, S *[]string) (string, *string) {
-	return (*q)[(*hsp)[0][0] : (*hsp)[1][0] + 1], utils.PrettyProbSeg(d, (*hsp)[0][1], (*hsp)[1][1] + 1, S, 0.)
+// func middle(hsp *[][]int, q *string, d *[][]float64, S *[]string) (string, *string) {
+func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) {
+	// return (*q)[(*hsp)[0][0] : (*hsp)[1][0] + 1], utils.PrettyProbSeg(d, (*hsp)[0][1], (*hsp)[1][1] + 1, S, 0.)
+	return (*q)[hsp.QIdxLeft : hsp.QIdxRight + 1], utils.PrettyProbSeg(d, hsp.DIdxLeft, hsp.DIdxRight + 1, S, 0.)
 }
 
 func fill(N *[][]float64,
@@ -135,9 +130,8 @@ func fill(N *[][]float64,
 		  q *string,
 		  d *[][]float64,
 		  S_idx *map[string]int,
-		  gap_penalty, 
-		  hit_thres,
-		  delta float64,
+		  params *Params,
+		  gap_penalty float64,
 		  direction int) (int, int) {
 	
 	var i_end int
@@ -153,11 +147,13 @@ func fill(N *[][]float64,
 
 		// Expand, initialize top row and/or left column, then fill cells on layer
 		if layer < q_len {
-			bottom_i_max, bottom_j_max = fill_bottom(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, hit_thres, direction)
+			bottom_i_max, bottom_j_max = fill_bottom(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, params.HitThres, direction)
 		}
 		if layer < d_len {
-			right_i_max, right_j_max = fill_right(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, hit_thres, direction)
+			right_i_max, right_j_max = fill_right(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, params.HitThres, direction)
 		}
+		// pretty.Println(*N)
+
 		layer_i_max, layer_j_max := layer_cell_max(N, bottom_i_max, bottom_j_max, right_i_max, right_j_max)
 
 		// i_max, j_max = cell_max(N, i_max, j_max, layer_i_max, layer_j_max)
@@ -165,7 +161,7 @@ func fill(N *[][]float64,
 			i_max = layer_i_max
 			j_max = layer_j_max
 			
-		} else if math.Abs((*N)[i_max][j_max] - (*N)[layer_i_max][layer_j_max]) > delta {
+		} else if math.Abs((*N)[i_max][j_max] - (*N)[layer_i_max][layer_j_max]) > params.Delta {
 			fmt.Println("exceeded delta")
 			has_exceeded_delta = true
 			break
@@ -174,14 +170,14 @@ func fill(N *[][]float64,
 	if has_exceeded_delta {
 		i_end = i_max
 		j_end = j_max
-		fmt.Println("i_max:", i_max)
-		fmt.Println("j_max:", j_max)
+		// fmt.Println("i_max:", i_max)
+		// fmt.Println("j_max:", j_max)
 	} else {
 		i_end = q_len
 		j_end = d_len
-		fmt.Println("last cell:", (*N)[q_len][d_len])
-		fmt.Println("q_len:", q_len)
-		fmt.Println("d_len:", d_len)
+		// fmt.Println("last cell:", (*N)[q_len][d_len])
+		// fmt.Println("q_len:", q_len)
+		// fmt.Println("d_len:", d_len)
 	}
 	return i_end, j_end
 }
@@ -193,6 +189,11 @@ func fill(N *[][]float64,
 // }
 
 func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, right_j_max int) (int, int) {
+	// fmt.Println("bottom_i_max:", bottom_i_max)
+	// fmt.Println("bottom_j_max:", bottom_j_max)
+	// fmt.Println("right_i_max:", right_i_max)
+	// fmt.Println("right_j_max:", right_j_max)
+
 	if (bottom_i_max < 0 || bottom_j_max < 0) && right_i_max >= 0 && right_j_max >= 0 {
 		return right_i_max, right_j_max
 	}
@@ -200,7 +201,7 @@ func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, rig
 		return bottom_i_max, bottom_j_max
 	}
 	if (right_i_max < 0 || right_j_max < 0) && (bottom_i_max < 0 || bottom_j_max < 0) {
-		panic("[layer_cell_max] Index out of range")
+		panic("[layer_cell_max] Index out of range: -1 present in both right and bottom indices")
 	}
 
 	if (*N)[bottom_i_max][bottom_j_max] > (*N)[right_i_max][right_j_max] {
@@ -227,7 +228,7 @@ func fill_bottom(N *[][]float64,
 	(*N)[layer + 1][0] = -float64(layer + 1) * gap_penalty
 
 	i_max := layer + 1
-	j_max := -1
+	j_max := 0
 	max_val := math.Inf(-1)
 
 	// Fill new bottom row
@@ -268,7 +269,7 @@ func fill_right(N *[][]float64,
 	// Initialize cell on top column
 	(*N)[0][layer + 1] = -float64(layer + 1) * gap_penalty
 
-	i_max := -1
+	i_max := 0
 	j_max := layer + 1
 	max_val := math.Inf(-1)
 

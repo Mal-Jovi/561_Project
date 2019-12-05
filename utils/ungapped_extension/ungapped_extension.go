@@ -3,32 +3,32 @@ package ungapped_extension
 import (
 	"math"
 	"github.com/Mal-Jovi/561_Project/utils"
+	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
-func extend(q_idx, d_idx int,
-			q *string, d *[][]float64, w int, S *[]string,
-			hit_thres, delta float64,
-			step int) (*[]int, float64) {
-
+func extend(q_idx, d_idx int, q *string, d *[][]float64, params *Params, direction int) (*[]int, float64) {
 	has_exceeded_delta := false
 	max_score := math.Inf(-1)
 	max_q_idx := q_idx
 	max_d_idx := d_idx
 	score := 0.
 
-	for 0 < q_idx && q_idx < len(* q) - 1 && 0 < d_idx && d_idx < len((* d)[0]) - 1  {
-		q_idx += step
-		d_idx += step
+	if direction >= 0 {
+		direction = 1
+	} else {
+		direction = -1
+	}
 
-		// add diff between prob and hit_thres
-		// score += (* d)[ utils.SliceIndex(S, string((* q)[q_idx])) ][d_idx] - hit_thres
+	for 0 < q_idx && q_idx < len(*q) - 1 && 0 < d_idx && d_idx < len((*d)[0]) - 1  {
+		q_idx += direction
+		d_idx += direction
 		
 		// score = score + prob if prob > hit_thres else score - (hit_thres - prob)
-		prob := (*d)[ utils.SliceIndex(S, string((*q)[q_idx])) ][ d_idx ]
-		if prob > hit_thres {
+		prob := (*d)[ utils.SliceIndex(&params.S, string((*q)[q_idx])) ][ d_idx ]
+		if prob >= params.HitThres {
 			score += prob
 		} else {
-			score -= hit_thres - prob
+			score -= params.HitThres - prob
 		}
 
 		if score >= max_score {
@@ -36,7 +36,7 @@ func extend(q_idx, d_idx int,
 			max_q_idx = q_idx
 			max_d_idx = d_idx
 
-		} else if math.Abs(max_score - score) > delta {
+		} else if math.Abs(max_score - score) > params.Delta {
 			has_exceeded_delta = true
 			break
 		}
@@ -45,24 +45,32 @@ func extend(q_idx, d_idx int,
 		return &[]int{max_q_idx, max_d_idx}, max_score
 	}
 	return &[]int{q_idx, d_idx}, score
-// return & []int{max_q_idx, max_d_idx}, score
 }
 
-func Left(q_idx, d_idx int,
-		  q *string,
-		  d *[][]float64,
-		  w int, S *[]string,
-		  hit_thres, delta float64) (*[]int, float64) {
-
-	return extend(q_idx, d_idx, q, d, w, S, hit_thres, delta, -1)
+func Left(q_idx, d_idx int, q *string, d *[][]float64, params *Params) (*[]int, float64) {
+	return extend(q_idx, d_idx, q, d, params, -1)
 }
 
-func Right(q_idx, d_idx int,
-		   q *string,
-		   d *[][]float64,
-		   w int,
-		   S *[]string,
-		   hit_thres, delta float64) (*[]int, float64) {
+func Right(q_idx, d_idx int, q *string, d *[][]float64, params *Params) (*[]int, float64) {
+	return extend(q_idx + params.W - 1, d_idx + params.W - 1, q, d, params, 1)
+}
 
-	return extend(q_idx + w - 1, d_idx + w - 1, q, d, w, S, hit_thres, delta, 1)
+func ScoreMiddle(q_idx, d_idx int, q *string, d *[][]float64, params *Params) float64 {
+	score := 0.
+	for i := 0; i < params.W; i++ {
+		score += CharScore(q_idx+i, d_idx+i, q, d, params)
+	}
+	return score
+}
+
+func CharScore(q_idx, d_idx int, q *string, d *[][]float64, params *Params) float64 {
+	char := string((*q)[q_idx])
+	char_idx := utils.SliceIndex(&params.S, char)
+	prob := (*d)[ char_idx ][ d_idx ]
+	
+	if prob >= params.HitThres {
+		return prob
+	} else {
+		return - (params.HitThres - prob)
+	}
 }

@@ -3,9 +3,10 @@ package indexing
 import (
 	"math"
 	"github.com/Mal-Jovi/561_Project/utils"
+	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
-func GenSeeds(S *[] string, w int) [][] string {
+func GenSeeds(S *[]string, w int) [][] string {
 	// seeds := make([][]string, len(S)^w)
 	indexes := make([]int, w)
 	seeds := [][]string{}
@@ -13,7 +14,7 @@ func GenSeeds(S *[] string, w int) [][] string {
 	for indexes != nil {
 		seed := make([]string, w)
 		for i, x := range indexes {
-			seed[i] = (* S)[x]
+			seed[i] = (*S)[x]
 		}
 
 		for i := len(indexes) - 1; i >= 0; i-- {
@@ -32,18 +33,16 @@ func GenSeeds(S *[] string, w int) [][] string {
 	return seeds
 }
 
-func ProbFind(seed * string, d *[][] float64, w int,
-	S *[] string, hit_thres float64) [] int {
+func ProbFind(seed *string, d *[][]float64, params *Params) []int {
 
 	indices := []int{}
-	thres := float64(w) * math.Log(hit_thres)
+	thres := float64(params.W) * math.Log(params.HitThres)
 
-	for i := 0; i < len((*d)[0]) - w + 1; i++ {
+	for i := 0; i < len((*d)[0]) - params.W + 1; i++ {
 		sum_log_prob := 0.
-		for j := 0; j < w; j++ {
-			sum_log_prob += math.Log( (* d)[ utils.SliceIndex(S, string((*seed)[j])) ][i+j])
+		for j := 0; j < params.W; j++ {
+			sum_log_prob += math.Log( (* d)[ utils.SliceIndex(&params.S, string((*seed)[j])) ][i+j])
 		}
-
 		if sum_log_prob > thres {
 			indices = append(indices, i)
 		}

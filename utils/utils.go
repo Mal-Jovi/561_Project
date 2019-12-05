@@ -46,9 +46,11 @@ func ExpandMatIntRight(mat *[][]int, expand_by int) *[][]int {
 	return mat
 }
 
-func SliceIndex(S *[] string, el string) int {
-	for i := 0; i < len(* S); i++ {
-		if (* S)[i] == el { return i }
+func SliceIndex(S *[]string, el string) int {
+	for i := 0; i < len(*S); i++ {
+		if (*S)[i] == el {
+			return i
+		}
 	}
 	return -1
 }

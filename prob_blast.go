@@ -9,183 +9,150 @@ import (
 	"github.com/Mal-Jovi/561_Project/utils/indexing"
 	"github.com/Mal-Jovi/561_Project/utils/ungapped_extension"
 	"github.com/Mal-Jovi/561_Project/utils/gapped_extension"
+	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
-type Params struct {
-	W int // word size
-	HitThres float64
-	Delta float64
-	HspThres float64
-	S *[]string
-
-	EThres float64
-}
-
 func main() {
-	params := Params{
-		7,
-		0.9,
-		2.5,
-		5.,
-		&[]string{"A", "T", "G", "C"},
-		0.
-	}
-	w := 7
-	hit_thres := 0.9
-	// delta := 10.
-	// delta := 5.
-	delta := 2.5
-	// delta := math.Inf(1)
-	// hsp_thres := 0.
-	// hsp_thres := 1.
-	hsp_thres := 5.
-	// hsp_thres := 0.5
-	e_thres := 0.
-	S := []string{"A", "T", "G", "C"}
+	var params Params
+	params.W = 7 // Word size
+	params.HitThres = 0.9
+	params.Delta = 2.5
+	params.HspThres = 5.
+	params.S = []string{"A", "T", "G", "C"} // Alphabet
+	params.EThres = 0.
 
 	d := utils.GetProbSeq(
 		"data/raw/chr22.maf.ancestors.42000000.complete.boreo.fa",
 		utils.GetDConf("data/raw/chr22.maf.ancestors.42000000.complete.boreo.conf"),
-		&S,
+		&params.S,
 	)
 	q := utils.SeqFromFasta("query.fa")
 
-	prob_blast(q, d, w, &S, hit_thres, delta, hsp_thres, e_thres)
+	// prob_blast(q, d, w, &S, hit_thres, delta, hsp_thres, e_thres)
+	prob_blast(q, d, &params)
 }
 
-func prob_blast(q * string,
-				d *[][] float64,
-				w int,
-				S *[] string,
-		        hit_thres, delta, hsp_thres, e_thres float64) {
+func prob_blast(q * string, d *[][] float64, params *Params) *[]Alignment {
 
 	// alingments := []int{}
 	// index := prob_index_table(d, w, S, hit_thres)
-	index := prob_index_table(d, w, S, hit_thres)	
-	hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
+	index := prob_index_table(d, params)
+	// hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
+	hsps := prob_extend(q, d, index, params)
 	fmt.Println(*hsps)
-	prob_extend_gap(q, d, S, hsps, hit_thres, delta)
+	// prob_extend_gap(q, d, S, hsps, hit_thres, delta)
+	alignments := prob_extend_gap(q, d, hsps, params)
+	return alignments
 }
 
-func prob_index_table(d *[][] float64, w int, S *[] string,
-		              hit_thres float64) * map[string][]int {
+func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
 	
-	path := fmt.Sprint("data/processed/prob_index_table.w", w, ".hit_thres", hit_thres,".json")
+	path := fmt.Sprint("data/processed/prob_index_table.w", params.W, ".hit_thres", params.HitThres, ".json")
 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		return utils.IndexFromJson(& path)
+		return utils.IndexFromJson(&path)
 	}
 
-	index := make(map[string] []int)
-	seeds := indexing.GenSeeds(S, w)
+	index := make(map[string][]int)
+	seeds := indexing.GenSeeds(&params.S, params.W)
 
 	// Concurrently index database using 4 cores
 	num_cores := 4
 	for i := 0; i < num_cores - 1; i++ {
 		go _prob_index_table(
-			& index,
+			&index,
 			i * (len(seeds) / num_cores), // Start index
 			(i + 1) * (len(seeds) / num_cores), // End index
-			& seeds, d, w, S, hit_thres,
+			&seeds, d,
+			params,
 		)
 	}
 	_prob_index_table(
-		& index,
+		&index,
 		(num_cores-1)*(len(seeds) / 4),
 		len(seeds),
-		& seeds, d, w, S, hit_thres,
+		&seeds, d,
+		params,
 	)
-	utils.IndexToJson(& index, & path)
+	utils.IndexToJson(&index, &path)
 
-	return & index
+	return &index
 }
 
-func _prob_index_table(index * map[string][]int,
+func _prob_index_table(index *map[string][]int,
 					   start, end int,
-					   seeds *[][] string,
-					   d *[][] float64,
-					   w int,
-					   S *[] string,
-					   hit_thres float64)  {
+					   seeds *[][]string,
+					   d *[][]float64,
+					   params *Params)  {
 
 	for i := start; i < end; i++ {
-		seed := strings.Join((* seeds)[i], "")
-		(* index)[seed] = indexing.ProbFind(& seed, d, w, S, hit_thres)
+		seed := strings.Join((*seeds)[i], "")
+		(*index)[seed] = indexing.ProbFind(&seed, d, params)
 	}
 }
 
-func prob_extend(q *string,
-				 d *[][]float64,
-				 w int,
-				 S *[]string,
-				 index *map[string][]int,
-				 hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
+// func prob_extend(q *string,
+// 				 d *[][]float64,
+// 				 w int,
+// 				 S *[]string,
+// 				 index *map[string][]int,
+// 				 hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
+// func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[][][]int {
+func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[]Hsp {
+	// hsps := [][][]int{}
+	hsps := []Hsp{}
 
-	hsps := [][][]int{}
+	for q_idx := 0; q_idx < len(*q) - params.W + 1; q_idx++ {
+		seed := (*q)[q_idx : q_idx + params.W]
 
-	for q_idx := 0; q_idx < len(*q) - w + 1; q_idx++ {
-		seed := (*q)[q_idx : q_idx + w]
+		for _, d_idx := range (*index)[seed] {
+			hsp_score := ungapped_extension.ScoreMiddle(q_idx, d_idx, q, d, params)
 
-		for _, d_idx := range (* index)[seed] {
-			var hsp_score float64
-
-			hsp_left, score_left := ungapped_extension.Left(q_idx, d_idx, q, d, w, S, hit_thres, delta)
-			hsp_right, score_right := ungapped_extension.Right(q_idx, d_idx, q, d, w, S, hit_thres, delta)
+			hsp_left, score_left := ungapped_extension.Left(q_idx, d_idx, q, d, params)
+			hsp_right, score_right := ungapped_extension.Right(q_idx, d_idx, q, d, params)
 
 			if score_left == math.Inf(-1) && score_right == math.Inf(-1) {
 				// fmt.Println("both")
 				continue
-			
-			} else if score_left == math.Inf(-1) {
+			}
+			if score_left > math.Inf(-1) {
 				// fmt.Println("left")
-				hsp_score = score_right
-			
-			} else if score_right == math.Inf(-1) {
+				hsp_score += score_left
+			}
+			if score_right > math.Inf(-1) {
 				// fmt.Println("right")
-				hsp_score = score_left
-			
-			} else {
-				// fmt.Println("none")
-				hsp_score = score_left + score_right
+				hsp_score += score_right
 			}
 
-			if hsp_score > hsp_thres {
-				hsps = append(hsps, [][]int{*hsp_left, *hsp_right})
+			if hsp_score >= params.HspThres {
+				// hsps = append(hsps, [][]int{*hsp_left, *hsp_right})
+				hsps = append(hsps, Hsp{(*hsp_left)[0], (*hsp_right)[0], (*hsp_left)[1], (*hsp_right)[1], hsp_score})
 			}
 		}
 	}
 	return &hsps
 }
 
-func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres, delta float64) {
+// func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres, delta float64) {
+func prob_extend_gap(q *string, d *[][]float64, hsps *[]Hsp, params *Params) *[]Alignment {
 
 	// substitution_matrix := gapped_extension.SubstitutionMatrix(S)
-	S_idx := gapped_extension.SIdx(S)
+	S_idx := gapped_extension.SIdx(&params.S)
 
 	// fmt.Println(substitution_matrix)
+
+	alignments := []Alignment{}
 
 	// for i, hsp := range *hsps {
 	for i := 0; i < len(*hsps); i++ {
 		fmt.Println("hsp", i)
-		// hsp := &(*hsps)[i]
-		// fmt.Println(*hsp)
-		// gapped_extension.NeedlemanWunsch(substitution_matrix)
 
-		// gapped_extension.Left(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
-		// gapped_extension.Right(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
-
-		// gapped_extension.Extend(q, d, &(*hsps)[i], hit_thres, delta, substitution_matrix)
-		// gapped_extension.Extend(len(*q) - 3, len((*d)[0]) - 6, q, d, S, S_idx, hit_thres, substitution_matrix, 1)
-		
-		// gapped_extension.Extend(len(*q) - 5, len((*d)[0]) - 10, q, d, S, S_idx, hit_thres, delta, 1)
-		// gapped_extension.Extend(3, 6, q, d, S, S_idx, hit_thres, delta, -1)
-		// gapped_extension.Test()
-
-		alignment :=gapped_extension.Extend(&(*hsps)[i], q, d, S, S_idx, hit_thres, delta)
-		fmt.Println(*alignment.QAligned)
-		fmt.Println(*alignment.DAligned)
-		
-		// break
+		alignment := gapped_extension.Extend(&(*hsps)[i], q, d, S_idx, params)
+		fmt.Println(alignment.QAligned)
+		fmt.Println(alignment.DAligned)
+		fmt.Println("score:", alignment.Score)
+		alignments = append(alignments, alignment)
 	}
 	fmt.Println(len(*hsps))
+	return &alignments
 }
