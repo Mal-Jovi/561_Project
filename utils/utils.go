@@ -13,7 +13,7 @@ import (
 )
 
 func SaveAlignments(alignments *[]*Alignment, params *Params) {
-	path := fmt.Sprintf("data/processed/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f",
+	path := fmt.Sprintf("data/processed/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f.json",
 		params.W, params.HitThres, params.Delta, params.HspThres)
 	
 	ExportToJson(alignments, &path)
