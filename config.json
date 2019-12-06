@@ -1,5 +1,5 @@
 {
-    "w": 7,
+    "w": 4,
     "hit_thres": 0.9,
     "delta": 2.5,
     "hsp_thres": 11.0,
@@ -7,5 +7,6 @@
     "e_thres": 0.0,
     "d": "data/raw/chr22.maf.ancestors.42000000.complete.boreo.fa",
     "d_conf": "data/raw/chr22.maf.ancestors.42000000.complete.boreo.conf",
-    "q": "query.fa"
+    "q": "query.fa",
+    "num_cores": 4
 }

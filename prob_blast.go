@@ -4,7 +4,6 @@ import (
 	"os"
 	"fmt"
 	"math"
-	"strings"
 	"github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
 	"github.com/Mal-Jovi/561_Project/utils/indexing"
@@ -14,24 +13,36 @@ import (
 )
 
 func main() {
+	// Default config file path config.json
 	config := "config.json"
 	if len(os.Args[1:]) == 1 {
+		// Parse command line argument for config file path
 		config = os.Args[1]
 
 	} else if len(os.Args[1:]) > 1 {
+		// > 1 command line arguments are invalid. Stop
 		fmt.Println("Invalid arguments. Usage: ./prob_blast [config file]")
+		return
 	}
+
+	// Parse parameters from config file
 	params := utils.ParamsFromJson(&config)
 	pretty.Println(params)
 
+	// Load query sequence q, probabilistic sequence d
+	q := utils.SeqFromFasta(params.Q)
 	d := utils.GetProbSeq(params.D, utils.GetDConf(params.DConf), &params.S)
-	q := utils.SeqFromFasta("query.fa")
 
+	// Run probabilistic BLAST
 	alignments := prob_blast(q, d, params)
 	pretty.Println(*alignments)
 	utils.SaveAlignments(alignments, params)
 }
 
+// prob_blast
+//
+// Probabilistic BLAST
+//
 func prob_blast(q * string, d *[][] float64, params *Params) *[]*Alignment {
 	index := prob_index_table(d, params)
 	hsps := prob_extend(q, d, index, params)
@@ -40,6 +51,10 @@ func prob_blast(q * string, d *[][] float64, params *Params) *[]*Alignment {
 	return alignments
 }
 
+// prob_index_table
+//
+// Index database, then export the index table
+//
 func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
 	path := fmt.Sprintf("data/processed/prob_index_table.w%d.hit_thres%.2f.json", params.W, params.HitThres)
 
@@ -52,42 +67,32 @@ func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
 	index := make(map[string][]int)
 	seeds := indexing.GenSeeds(&params.S, params.W)
 
-	// Concurrently index database using 4 cores
-	num_cores := 4
-	for i := 0; i < num_cores - 1; i++ {
-		go _prob_index_table(
-			&index,
-			i * (len(seeds) / num_cores), // Start index
-			(i + 1) * (len(seeds) / num_cores), // End index
-			&seeds, d,
-			params,
-		)
+	// Concurrently index database using num_cores cores
+	var start int
+	var end int
+
+	for i := 0; i < params.NumCores - 1; i++ {
+		start = i * (len(seeds) / params.NumCores) // Start index
+		end = (i + 1) * (len(seeds) / params.NumCores) // End index
+
+		// Spawn go routine for concurrency
+		go indexing.ProbIndexTable(&index, start, end, &seeds, d, params)
 	}
-	_prob_index_table(
-		&index,
-		(num_cores-1)*(len(seeds) / 4),
-		len(seeds),
-		&seeds, d,
-		params,
-	)
+	start = (params.NumCores - 1) * (len(seeds) / 4)
+	end = len(seeds)
+	indexing.ProbIndexTable(&index, start, end, &seeds, d, params)
+	
+	// Save index table to path
 	utils.ExportToJson(&index, &path)
 	fmt.Println("Saved index to", path)
 
 	return &index
 }
 
-func _prob_index_table(index *map[string][]int,
-					   start, end int,
-					   seeds *[][]string,
-					   d *[][]float64,
-					   params *Params)  {
-
-	for i := start; i < end; i++ {
-		seed := strings.Join((*seeds)[i], "")
-		(*index)[seed] = indexing.ProbFind(&seed, d, params)
-	}
-}
-
+// prob_extend
+//
+// Ungapped extension. Return list of high scoring pairs
+//
 func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[]*Hsp {
 	hsps := []*Hsp{}
 
@@ -118,6 +123,11 @@ func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Par
 	return &hsps
 }
 
+// prob_extend_gap
+//
+// Gapped extension. Further extend HSPs using Needleman-Wunsch
+// Return list of resulting alignments
+//
 func prob_extend_gap(q *string, d *[][]float64, hsps *[]*Hsp, params *Params) *[]*Alignment {
 	S_idx := gapped_extension.SIdx(&params.S)
 	alignments := []*Alignment{}

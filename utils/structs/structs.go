@@ -10,6 +10,7 @@ type Params struct {
 	D string `json:"d"`
 	DConf string `json:"d_conf"`
 	Q string `json:"q"`
+	NumCores int `json:"num_cores"`
 }
 
 type Alignment struct {
