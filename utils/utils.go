@@ -187,7 +187,7 @@ func load_json(path *string, target interface{}) {
 
 // func IndexToJson(index *map[string][]int, path *string) {
 func ExportToJson(data interface{}, path *string) {
-	dat, err := json.Marshal(data)
+	dat, err := json.MarshalIndent(data, "", "    ")
 	check(err)
 
 	os.MkdirAll(filepath.Dir(*path), 0700)
