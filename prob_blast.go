@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
 	"github.com/Mal-Jovi/561_Project/utils/indexing"
 	"github.com/Mal-Jovi/561_Project/utils/ungapped_extension"
@@ -17,7 +18,8 @@ func main() {
 	params.W = 7 // Word size
 	params.HitThres = 0.9
 	params.Delta = 2.5
-	params.HspThres = 5.
+	// params.HspThres = 5.
+	params.HspThres = 11.
 	params.S = []string{"A", "T", "G", "C"} // Alphabet
 	params.EThres = 0.
 
@@ -29,29 +31,35 @@ func main() {
 	q := utils.SeqFromFasta("query.fa")
 
 	// prob_blast(q, d, w, &S, hit_thres, delta, hsp_thres, e_thres)
-	prob_blast(q, d, &params)
+	alignments := prob_blast(q, d, &params)
+	utils.SaveAlignments(alignments, &params)
 }
 
-func prob_blast(q * string, d *[][] float64, params *Params) *[]Alignment {
+func prob_blast(q * string, d *[][] float64, params *Params) *[]*Alignment {
 
 	// alingments := []int{}
 	// index := prob_index_table(d, w, S, hit_thres)
 	index := prob_index_table(d, params)
 	// hsps := prob_extend(q, d, w, S, index, hit_thres, delta, hsp_thres, e_thres)
 	hsps := prob_extend(q, d, index, params)
-	fmt.Println(*hsps)
+	// pretty.Println(*hsps)
 	// prob_extend_gap(q, d, S, hsps, hit_thres, delta)
 	alignments := prob_extend_gap(q, d, hsps, params)
+	pretty.Println(*alignments)
 	return alignments
 }
 
 func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
 	
-	path := fmt.Sprint("data/processed/prob_index_table.w", params.W, ".hit_thres", params.HitThres, ".json")
+	path := fmt.Sprintf("data/processed/prob_index_table.w%d.hit_thres%.2f.json", params.W, params.HitThres)
+
+	fmt.Println(path)
 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		return utils.IndexFromJson(&path)
 	}
+
+	fmt.Println("Indexing database with word size", params.W, "and hit_thres", params.HitThres, "...")
 
 	index := make(map[string][]int)
 	seeds := indexing.GenSeeds(&params.S, params.W)
@@ -74,7 +82,7 @@ func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
 		&seeds, d,
 		params,
 	)
-	utils.IndexToJson(&index, &path)
+	utils.ExportToJson(&index, &path)
 
 	return &index
 }
@@ -91,16 +99,9 @@ func _prob_index_table(index *map[string][]int,
 	}
 }
 
-// func prob_extend(q *string,
-// 				 d *[][]float64,
-// 				 w int,
-// 				 S *[]string,
-// 				 index *map[string][]int,
-// 				 hit_thres, delta, hsp_thres, e_thres float64) *[][][] int {
-// func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[][][]int {
-func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[]Hsp {
+func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Params) *[]*Hsp {
 	// hsps := [][][]int{}
-	hsps := []Hsp{}
+	hsps := []*Hsp{}
 
 	for q_idx := 0; q_idx < len(*q) - params.W + 1; q_idx++ {
 		seed := (*q)[q_idx : q_idx + params.W]
@@ -126,33 +127,33 @@ func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Par
 
 			if hsp_score >= params.HspThres {
 				// hsps = append(hsps, [][]int{*hsp_left, *hsp_right})
-				hsps = append(hsps, Hsp{(*hsp_left)[0], (*hsp_right)[0], (*hsp_left)[1], (*hsp_right)[1], hsp_score})
+				hsps = append(hsps, &Hsp{(*hsp_left)[0], (*hsp_right)[0], (*hsp_left)[1], (*hsp_right)[1], hsp_score})
 			}
 		}
 	}
 	return &hsps
 }
 
-// func prob_extend_gap(q *string, d *[][]float64, S *[]string, hsps *[][][]int, hit_thres, delta float64) {
-func prob_extend_gap(q *string, d *[][]float64, hsps *[]Hsp, params *Params) *[]Alignment {
+func prob_extend_gap(q *string, d *[][]float64, hsps *[]*Hsp, params *Params) *[]*Alignment {
 
 	// substitution_matrix := gapped_extension.SubstitutionMatrix(S)
 	S_idx := gapped_extension.SIdx(&params.S)
 
 	// fmt.Println(substitution_matrix)
 
-	alignments := []Alignment{}
+	alignments := []*Alignment{}
+	
+	// fmt.Println("num hsps:", len(*hsps))
 
 	// for i, hsp := range *hsps {
 	for i := 0; i < len(*hsps); i++ {
-		fmt.Println("hsp", i)
+		// fmt.Println("hsp", i, ":")
 
-		alignment := gapped_extension.Extend(&(*hsps)[i], q, d, S_idx, params)
-		fmt.Println(alignment.QAligned)
-		fmt.Println(alignment.DAligned)
-		fmt.Println("score:", alignment.Score)
-		alignments = append(alignments, alignment)
+		alignment := gapped_extension.Extend((*hsps)[i], q, d, S_idx, params)
+		// fmt.Println(alignment.QAligned)
+		// fmt.Println(alignment.DAligned)
+		// fmt.Println("score:", alignment.Score)
+		alignments = append(alignments, &alignment)
 	}
-	fmt.Println(len(*hsps))
 	return &alignments
 }

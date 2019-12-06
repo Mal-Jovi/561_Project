@@ -1,7 +1,7 @@
 package gapped_extension
 
 import (
-	"fmt"
+	// "fmt"
 	"math"
 	// "github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
@@ -44,18 +44,18 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 	
 	q_len, d_len := q_len_d_len(q_idx, d_idx, q, d, direction)
 
-	if direction >= 0 {
-		fmt.Println("extending right")
+	// if direction >= 0 {
+		// fmt.Println("extending right")
 		// fmt.Println("q seg:", (*q)[q_idx:q_idx + q_len])
 		// fmt.Println("d seg:", *utils.PrettyProbSeg(d, d_idx, d_idx + d_len, S, hit_thres))
-	} else {
-		fmt.Println("extending left")
+	// } else {
+		// fmt.Println("extending left")
 		// fmt.Println("q seg:", (*q)[:q_idx + 1])
 		// fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, &params.S, params.HitThres))
-	}
+	// }
 
 	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, params, gap_penalty, direction)
-	fmt.Println("exited fill()")
+	// fmt.Println("exited fill()")
 	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, &params.S, params.HitThres, direction)
 	// traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
 	
@@ -78,19 +78,21 @@ func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *
 	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
 	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
 
-	if left_q_aligned == nil || left_d_aligned == nil {
-		fmt.Println("didn't extend left")
-	} else {
+	if left_q_aligned != nil && left_d_aligned != nil {
 		q_aligned = *left_q_aligned + q_aligned
 		*d_aligned = *left_d_aligned + *d_aligned
 	}
+	// } else {
+	// 	fmt.Println("didn't extend left")
+	// }
 
-	if right_q_aligned == nil || right_d_aligned == nil {
-		fmt.Println("didn't extend right")
-	} else {
+	if right_q_aligned != nil && right_d_aligned != nil {
 		q_aligned += *right_q_aligned
 		*d_aligned += *right_d_aligned
 	}
+	// } else {
+	// 	fmt.Println("didn't extend right")
+	// }
 
 	alignment.QAligned = q_aligned
 	alignment.DAligned = *d_aligned
@@ -162,7 +164,7 @@ func fill(N *[][]float64,
 			j_max = layer_j_max
 			
 		} else if math.Abs((*N)[i_max][j_max] - (*N)[layer_i_max][layer_j_max]) > params.Delta {
-			fmt.Println("exceeded delta")
+			// fmt.Println("exceeded delta")
 			has_exceeded_delta = true
 			break
 		}
@@ -181,12 +183,6 @@ func fill(N *[][]float64,
 	}
 	return i_end, j_end
 }
-
-// func cell_max(N *[][]float64, layer_i_max, layer_j_max int) (int, int) {
-// 	if i_max == -1 && j_max == -1 {
-// 		return layer_i_max, layer_j_max
-// 	}
-// }
 
 func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, right_j_max int) (int, int) {
 	// fmt.Println("bottom_i_max:", bottom_i_max)
@@ -305,8 +301,6 @@ func nw_recurrence(N *[][]float64,
 				   S_idx *map[string]int,
 				   gap_penalty,
 				   hit_thres float64) float64 {
-
-	// backptr := -1
 	
 	cell_val, backptr := utils.Max(
 		(*N)[i-1][j-1] + sub_mat(q_idx, d_idx, q, d, S_idx, hit_thres),
@@ -362,7 +356,7 @@ func q_len_d_len(q_idx, d_idx int, q *string, d *[][]float64, direction int) (in
 func preconditions(q_idx, d_idx int, q *string, d *[][]float64) bool {
 	if q_idx < 0 || q_idx >= len(*q) || q_idx < 0 || q_idx >= len((*d)[0]) {
 		// out of bounds
-		fmt.Println("out of bounds")
+		// fmt.Println("out of bounds")
 		return false
 	}
 	return true
@@ -400,11 +394,6 @@ func traceback(backptrs *[][]int,
 	} else {
 		d_seg = utils.PrettyProbSeg(d, d_idx - j_end + 1, d_idx + 1, S, 0.)
 	}
-
-	// fmt.Println("d_seg:", *d_seg)
-
-	// q_idx + i_end*direction
-	// d_idx + j_end*direction
 
 	if direction >= 0 {
 		q_idx += i_end - 1
@@ -472,25 +461,6 @@ func traceback_top(q_idx, d_idx int, q_aligned, d_aligned, q, d_seg *string, dir
 	}
 }
 
-// func SubstitutionMatrix(S *[]string) *[][]int {
-// 	m := utils.MatInt(len(* S), len(* S))
-	
-// 	match_score := 1
-// 	mismatch_score := -1
-
-// 	for i := 0; i < len(* S); i++ {
-// 		for j := 0; j < len(* S); j++ {
-// 			if i == j {
-// 				(* m)[i][j] = match_score
-			
-// 			} else {
-// 				(* m)[i][j] = mismatch_score
-// 			}
-// 		}
-// 	}
-// 	return m
-// }
-
 func SIdx(S *[]string) *map[string]int {
 	S_idx := make(map[string]int)
 
@@ -499,16 +469,3 @@ func SIdx(S *[]string) *map[string]int {
 	}
 	return &S_idx
 }
-
-// func init_nw(seq1, seq2 *string, gap_open_penaty, gap_extend_penalty int) *[][]float64 {
-// 	N := utils.Mat(len(* seq1), len(* seq2))
-
-// 	// fill first row and first column here
-// 	for i := 0; i < len(*seq1); i++ {
-// 		(*N)[i][0] = float64(i * gap_extend_penalty)
-// 	}
-// 	for j := 1; j < len(*seq2); j++ {
-// 		(*N)[0][j] = float64(j * gap_extend_penalty)
-// 	}
-// 	return N
-// }

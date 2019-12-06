@@ -2,13 +2,22 @@ package utils
 
 import (
 	"os"
+	"fmt"
 	"math"
 	"bufio"
 	"strings"
 	"strconv"
 	"io/ioutil"
 	"encoding/json"
+	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
+
+func SaveAlignments(alignments *[]*Alignment, params *Params) {
+	path := fmt.Sprintf("data/processed/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f",
+		params.W, params.HitThres, params.Delta, params.HspThres)
+	
+	ExportToJson(alignments, &path)
+}
 
 func ExpandMat(mat *[][]float64, expand_by int) *[][]float64 {
 	ExpandMatBottom(mat, expand_by)
@@ -151,7 +160,7 @@ func MatInt(num_rows, num_cols int) *[][]int {
 	return &mat
 }
 
-func IndexFromJson(path * string) * map[string][]int {
+func IndexFromJson(path *string) *map[string][]int {
 	index := make(map[string][]int)
 	fin, err := os.Open(*path)
 	check(err)
@@ -159,19 +168,20 @@ func IndexFromJson(path * string) * map[string][]int {
 
 	data, _ := ioutil.ReadAll(fin)
 	fin.Close()
-	json.Unmarshal([]byte(data), & index)
-	return & index
+	json.Unmarshal([]byte(data), &index)
+	return &index
 }
 
-func IndexToJson(index * map[string][]int, path * string) {
-	data, err := json.Marshal(index)
+// func IndexToJson(index *map[string][]int, path *string) {
+func ExportToJson(data interface{}, path *string) {
+	dat, err := json.Marshal(data)
 	check(err)
 
-	fout, err := os.Create(* path)
+	fout, err := os.Create(*path)
 	check(err)
 	defer fout.Close()
 
-	fout.Write(data)
+	fout.Write(dat)
 	fout.Close()
 }
 
