@@ -8,12 +8,13 @@ import (
 	"strings"
 	"strconv"
 	"io/ioutil"
+	"path/filepath"
 	"encoding/json"
 	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
 func SaveAlignments(alignments *[]*Alignment, params *Params) {
-	path := fmt.Sprintf("data/processed/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f.json",
+	path := fmt.Sprintf("output/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f.json",
 		params.W, params.HitThres, params.Delta, params.HspThres)
 	
 	ExportToJson(alignments, &path)
@@ -177,6 +178,7 @@ func ExportToJson(data interface{}, path *string) {
 	dat, err := json.Marshal(data)
 	check(err)
 
+	os.MkdirAll(filepath.Dir(*path), 0700)
 	fout, err := os.Create(*path)
 	check(err)
 	defer fout.Close()

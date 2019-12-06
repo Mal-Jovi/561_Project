@@ -15,7 +15,7 @@ import (
 
 func main() {
 	var params Params
-	params.W = 7 // Word size
+	params.W = 4 // Word size
 	params.HitThres = 0.9
 	params.Delta = 2.5
 	// params.HspThres = 5.
