@@ -9,26 +9,25 @@ import (
 )
 
 func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) Alignment {
+	// Middle (hsp) alignment
+	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
+	
+	// Extend to left and right of hsp
 	left_q_aligned, left_d_aligned, left_score := left(hsp, q, d, S_idx, params)
 	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
-	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
 
+	// If extended left, prepend left alignment to middle alignment
 	if left_q_aligned != nil && left_d_aligned != nil {
 		q_aligned = *left_q_aligned + q_aligned
 		*d_aligned = *left_d_aligned + *d_aligned
 	}
-	// } else {
-	// 	fmt.Println("didn't extend left")
-	// }
-
+	// If extended right, append right alignment to middle alignment
 	if right_q_aligned != nil && right_d_aligned != nil {
 		q_aligned += *right_q_aligned
 		*d_aligned += *right_d_aligned
 	}
-	// } else {
-	// 	fmt.Println("didn't extend right")
-	// }
 
+	// Create and return alignment object
 	var alignment Alignment
 	alignment.QAligned = q_aligned
 	alignment.DAligned = *d_aligned
@@ -53,6 +52,8 @@ func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) 
 	return (*q)[hsp.QIdxLeft : hsp.QIdxRight + 1], utils.PrettyProbSeg(d, hsp.DIdxLeft, hsp.DIdxRight + 1, S, 0.)
 }
 
+// extend
+//
 // Gapped extension by incrementally expanding Needleman-Wunsch
 // dynamic programming table
 //
@@ -114,7 +115,7 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 
 // fill
 //
-// Incrementally expand dynamic programming and backpointers tables by layer
+// Incrementally expand dynamic programming and backpointers tables by layer (imagine an onion).
 // If exceeds delta while expanding, stop early, return cell with max score so far
 // If not and expanded table completely, return last cell (bottom-right) of table
 //
@@ -237,6 +238,7 @@ func fill_right(N *[][]float64,
 // Needleman-Wunsch recurrence
 //
 // Fill dynamic programming table and backpointers table at cell (i, j)
+//
 func nw_recurrence(N *[][]float64,
 				   backptrs *[][]int,
 				   i, j,
@@ -258,6 +260,12 @@ func nw_recurrence(N *[][]float64,
 	return cell_val
 }
 
+// layer_cell_max
+//
+// For a layer, compare the max of the row to the max of the column.
+// The larger of the two is the max value of the whole layer.
+// Return (i, j), indices of the cell containing this max value
+//
 func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, right_j_max int) (int, int) {
 	if (bottom_i_max < 0 || bottom_j_max < 0) && right_i_max >= 0 && right_j_max >= 0 {
 		return right_i_max, right_j_max
@@ -324,16 +332,10 @@ func preconditions(q_idx, d_idx int, q *string, d *[][]float64) bool {
 	return true
 }
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // traceback
 //
 // Recover Needleman-Wunsch alignment
+//
 func traceback(backptrs *[][]int,
 			   i_end, j_end,
 			   q_idx, d_idx int,
@@ -430,4 +432,11 @@ func SIdx(S *[]string) *map[string]int {
 		S_idx[char] = i
 	}
 	return &S_idx
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
