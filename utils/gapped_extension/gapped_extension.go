@@ -8,40 +8,82 @@ import (
 	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
+func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) Alignment {
+	left_q_aligned, left_d_aligned, left_score := left(hsp, q, d, S_idx, params)
+	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
+	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
+
+	if left_q_aligned != nil && left_d_aligned != nil {
+		q_aligned = *left_q_aligned + q_aligned
+		*d_aligned = *left_d_aligned + *d_aligned
+	}
+	// } else {
+	// 	fmt.Println("didn't extend left")
+	// }
+
+	if right_q_aligned != nil && right_d_aligned != nil {
+		q_aligned += *right_q_aligned
+		*d_aligned += *right_d_aligned
+	}
+	// } else {
+	// 	fmt.Println("didn't extend right")
+	// }
+
+	var alignment Alignment
+	alignment.QAligned = q_aligned
+	alignment.DAligned = *d_aligned
+	alignment.Hsp = *hsp
+	alignment.Score = left_score + right_score + hsp.Score
+	return alignment
+}
+
+func left(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+	q_idx := hsp.QIdxLeft - 1
+	d_idx := hsp.DIdxLeft - 1
+	return extend(q_idx, d_idx, q, d, S_idx, params, -1)
+}
+
+func right(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+	q_idx := hsp.QIdxRight + 1
+	d_idx := hsp.DIdxRight + 1
+	return extend(q_idx, d_idx, q, d, S_idx, params, 1)
+}
+
+func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) {
+	return (*q)[hsp.QIdxLeft : hsp.QIdxRight + 1], utils.PrettyProbSeg(d, hsp.DIdxLeft, hsp.DIdxRight + 1, S, 0.)
+}
+
 // Gapped extension by incrementally expanding Needleman-Wunsch
 // dynamic programming table
 //
 // Parameters:
 // -----------
+//     q_idx: Index of query where Needleman-Wunsch begins
+//     d_idx: Index pf databas sequence where Needleman-Wunsch begins
+//     S_idx: Mapping of each character to their index in alphabet `S`
+//     params: Probabilistic BLAST paramters, relevant ones here include
+//         params.S    : Alphabet e.g. ["A", "T", "G", "C"]
+// 	       params.HitThres: Probability threshold
+// 	       params.Delta: Extension threshold
+//     direction: Direction of extension; 1 for left-right, -1 for right-left
 //
-// 	q_idx: Index of query where Needleman-Wunsch begins
-// 	d_idx: Index pf databas sequence where Needleman-Wunsch begins
-// 	S    : Alphabet e.g. ["A", "T", "G", "C"]
-// 	S_idx: Mapping of each character to their index in alphabet `S`
-// 	hit_thres: Probability threshold
-// 	substitution_matrix: Return match and mismatch scores for each character pairing
-// 	direction: Direction of extension; 1 for left-right, -1 for right-left
 func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, params *Params, direction int) (*string, *string, float64) {
 
 	var q_aligned *string
 	var d_aligned *string
 	
 	if !preconditions(q_idx, d_idx, q, d) {
-		// fmt.Println("SAD")
 		return q_aligned, d_aligned, 0.
 	}
-
 	if direction >= 0 {
 		direction = 1
 	} else {
 		direction = -1
 	}
-	
+
 	gap_penalty := 1.
-	
 	N := utils.Mat(1, 1)
 	backptrs := utils.MatInt(1, 1)
-	
 	q_len, d_len := q_len_d_len(q_idx, d_idx, q, d, direction)
 
 	// if direction >= 0 {
@@ -70,62 +112,12 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 	return q_aligned, d_aligned, (*N)[i_end][j_end]
 }
 
-// func Extend(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) Alignment {
-func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) Alignment {
-	var alignment Alignment
-
-	left_q_aligned, left_d_aligned, left_score := left(hsp, q, d, S_idx, params)
-	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
-	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
-
-	if left_q_aligned != nil && left_d_aligned != nil {
-		q_aligned = *left_q_aligned + q_aligned
-		*d_aligned = *left_d_aligned + *d_aligned
-	}
-	// } else {
-	// 	fmt.Println("didn't extend left")
-	// }
-
-	if right_q_aligned != nil && right_d_aligned != nil {
-		q_aligned += *right_q_aligned
-		*d_aligned += *right_d_aligned
-	}
-	// } else {
-	// 	fmt.Println("didn't extend right")
-	// }
-
-	alignment.QAligned = q_aligned
-	alignment.DAligned = *d_aligned
-	alignment.Hsp = *hsp
-	alignment.Score = left_score + right_score + hsp.Score
-	// return &q_aligned, d_aligned
-	return alignment
-}
-
-// func left(hsp *[][]int, q *string, d *[][]float64, S *[]string, S_idx *map[string]int, hit_thres, delta float64) (*string, *string) {
-func left(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
-	// q_idx := (*hsp)[0][0] - 1
-	// d_idx := (*hsp)[0][1] - 1
-	q_idx := hsp.QIdxLeft - 1
-	d_idx := hsp.DIdxLeft - 1
-	// extend(q_idx, d_idx, q, d, hit_thres, delta, substitution_matrix, -1)
-	return extend(q_idx, d_idx, q, d, S_idx, params, -1)
-}
-
-func right(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
-	// q_idx := (*hsp)[1][0] + 1
-	// d_idx := (*hsp)[1][1] + 1
-	q_idx := hsp.QIdxRight + 1
-	d_idx := hsp.DIdxRight + 1
-	return extend(q_idx, d_idx, q, d, S_idx, params, 1)
-}
-
-// func middle(hsp *[][]int, q *string, d *[][]float64, S *[]string) (string, *string) {
-func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) {
-	// return (*q)[(*hsp)[0][0] : (*hsp)[1][0] + 1], utils.PrettyProbSeg(d, (*hsp)[0][1], (*hsp)[1][1] + 1, S, 0.)
-	return (*q)[hsp.QIdxLeft : hsp.QIdxRight + 1], utils.PrettyProbSeg(d, hsp.DIdxLeft, hsp.DIdxRight + 1, S, 0.)
-}
-
+// fill
+//
+// Incrementally expand dynamic programming and backpointers tables by layer
+// If exceeds delta while expanding, stop early, return cell with max score so far
+// If not and expanded table completely, return last cell (bottom-right) of table
+//
 func fill(N *[][]float64,
 		  backptrs *[][]int,
 		  q_idx, d_idx, q_len, d_len int,
@@ -135,9 +127,6 @@ func fill(N *[][]float64,
 		  params *Params,
 		  gap_penalty float64,
 		  direction int) (int, int) {
-	
-	var i_end int
-	var j_end int
 
 	has_exceeded_delta := false
 	i_max, j_max := -1, -1
@@ -154,56 +143,30 @@ func fill(N *[][]float64,
 		if layer < d_len {
 			right_i_max, right_j_max = fill_right(N, backptrs, layer, q_idx, d_idx, q, d, S_idx, gap_penalty, params.HitThres, direction)
 		}
-		// pretty.Println(*N)
-
 		layer_i_max, layer_j_max := layer_cell_max(N, bottom_i_max, bottom_j_max, right_i_max, right_j_max)
 
-		// i_max, j_max = cell_max(N, i_max, j_max, layer_i_max, layer_j_max)
 		if i_max < 0 || j_max < 0 || (*N)[layer_i_max][layer_j_max] >= (*N)[i_max][j_max] {
 			i_max = layer_i_max
 			j_max = layer_j_max
 			
 		} else if math.Abs((*N)[i_max][j_max] - (*N)[layer_i_max][layer_j_max]) > params.Delta {
-			// fmt.Println("exceeded delta")
 			has_exceeded_delta = true
 			break
 		}
 	}
+
+	var i_end int
+	var j_end int
 	if has_exceeded_delta {
+		// Stopped early, return cell with max score so far
 		i_end = i_max
 		j_end = j_max
-		// fmt.Println("i_max:", i_max)
-		// fmt.Println("j_max:", j_max)
 	} else {
+		// Expanded table completely, return bottom right cell
 		i_end = q_len
 		j_end = d_len
-		// fmt.Println("last cell:", (*N)[q_len][d_len])
-		// fmt.Println("q_len:", q_len)
-		// fmt.Println("d_len:", d_len)
 	}
 	return i_end, j_end
-}
-
-func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, right_j_max int) (int, int) {
-	// fmt.Println("bottom_i_max:", bottom_i_max)
-	// fmt.Println("bottom_j_max:", bottom_j_max)
-	// fmt.Println("right_i_max:", right_i_max)
-	// fmt.Println("right_j_max:", right_j_max)
-
-	if (bottom_i_max < 0 || bottom_j_max < 0) && right_i_max >= 0 && right_j_max >= 0 {
-		return right_i_max, right_j_max
-	}
-	if (right_i_max < 0 || right_j_max < 0) && bottom_i_max >= 0 && bottom_j_max >= 0 {
-		return bottom_i_max, bottom_j_max
-	}
-	if (right_i_max < 0 || right_j_max < 0) && (bottom_i_max < 0 || bottom_j_max < 0) {
-		panic("[layer_cell_max] Index out of range: -1 present in both right and bottom indices")
-	}
-
-	if (*N)[bottom_i_max][bottom_j_max] > (*N)[right_i_max][right_j_max] {
-		return bottom_i_max, bottom_j_max
-	}
-	return right_i_max, right_j_max
 }
 
 func fill_bottom(N *[][]float64,
@@ -229,16 +192,7 @@ func fill_bottom(N *[][]float64,
 
 	// Fill new bottom row
 	for col := 1; col < len((*N)[0]); col++ {
-		cell_val := nw_recurrence(
-			N, backptrs,
-			layer+1, col,
-			q_idx + layer*direction,
-			d_idx + (col-1)*direction,
-			q, d,
-			S_idx,
-			gap_penalty,
-			hit_thres,
-		)
+		cell_val := nw_recurrence(N, backptrs, layer+1, col, q_idx + layer*direction, d_idx + (col-1)*direction, q, d, S_idx, gap_penalty, hit_thres)
 		if cell_val > max_val {
 			max_val = cell_val
 			j_max = col
@@ -271,16 +225,7 @@ func fill_right(N *[][]float64,
 
 	// Fill new rightmost column
 	for row := 1; row < len(*N); row++ {
-		cell_val := nw_recurrence(
-			N, backptrs,
-			row, layer+1,
-			q_idx + (row-1)*direction,
-			d_idx + layer*direction,
-			q, d,
-			S_idx,
-			gap_penalty,
-			hit_thres,
-		)
+		cell_val := nw_recurrence(N, backptrs, row, layer+1, q_idx + (row-1)*direction, d_idx + layer*direction, q, d, S_idx, gap_penalty, hit_thres)
 		if cell_val > max_val {
 			max_val = cell_val
 			i_max = row
@@ -313,9 +258,26 @@ func nw_recurrence(N *[][]float64,
 	return cell_val
 }
 
+func layer_cell_max(N *[][]float64, bottom_i_max, bottom_j_max, right_i_max, right_j_max int) (int, int) {
+	if (bottom_i_max < 0 || bottom_j_max < 0) && right_i_max >= 0 && right_j_max >= 0 {
+		return right_i_max, right_j_max
+	}
+	if (right_i_max < 0 || right_j_max < 0) && bottom_i_max >= 0 && bottom_j_max >= 0 {
+		return bottom_i_max, bottom_j_max
+	}
+	if (right_i_max < 0 || right_j_max < 0) && (bottom_i_max < 0 || bottom_j_max < 0) {
+		panic("[layer_cell_max] Index out of range: -1 present in both right and bottom indices")
+	}
+
+	if (*N)[bottom_i_max][bottom_j_max] > (*N)[right_i_max][right_j_max] {
+		return bottom_i_max, bottom_j_max
+	}
+	return right_i_max, right_j_max
+}
+
 // Substitution matrix
 //
-// Return match score if probabiliy exceed threshold, else mismatch score
+// Return probability if probabiliy exceed hit_thres, else -(hit_thres - probability)
 func sub_mat(q_idx, d_idx int,
 			 q *string,
 			 d *[][]float64,
