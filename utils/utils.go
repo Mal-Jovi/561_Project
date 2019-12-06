@@ -14,8 +14,8 @@ import (
 )
 
 func SaveAlignments(alignments *[]*Alignment, params *Params) {
-	path := fmt.Sprintf("output/alignments.w%d.hit_thres%.2f.delta%.2f.hsp_thres%.2f.json",
-		params.W, params.HitThres, params.Delta, params.HspThres)
+	path := fmt.Sprintf("output/alignments.q:%s.w:%d.hit_thres:%.2f.delta:%.2f.hsp_thres:%.2f.json",
+		params.Q, params.W, params.HitThres, params.Delta, params.HspThres)
 	
 	ExportToJson(alignments, &path)
 	fmt.Println("Saved alignments to", path)

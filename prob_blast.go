@@ -56,7 +56,7 @@ func prob_blast(q * string, d *[][] float64, params *Params) *[]*Alignment {
 // Index database, then export the index table
 //
 func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
-	path := fmt.Sprintf("data/processed/prob_index_table.w%d.hit_thres%.2f.json", params.W, params.HitThres)
+	path := fmt.Sprintf("data/processed/prob_index_table.w:%d.hit_thres:%.2f.json", params.W, params.HitThres)
 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		return utils.IndexFromJson(&path)
