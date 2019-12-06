@@ -18,6 +18,7 @@ func SaveAlignments(alignments *[]*Alignment, params *Params) {
 		params.W, params.HitThres, params.Delta, params.HspThres)
 	
 	ExportToJson(alignments, &path)
+	fmt.Println("Saved alignments to", path)
 }
 
 func ExpandMat(mat *[][]float64, expand_by int) *[][]float64 {
@@ -161,16 +162,27 @@ func MatInt(num_rows, num_cols int) *[][]int {
 	return &mat
 }
 
+func ParamsFromJson(path *string) *Params {
+	var params Params
+	load_json(path, &params)
+	return &params
+}
+
 func IndexFromJson(path *string) *map[string][]int {
 	index := make(map[string][]int)
+	load_json(path, &index)
+	return &index
+}
+
+func load_json(path *string, target interface{}) {
 	fin, err := os.Open(*path)
 	check(err)
 	defer fin.Close()
 
 	data, _ := ioutil.ReadAll(fin)
 	fin.Close()
-	json.Unmarshal([]byte(data), &index)
-	return &index
+	err = json.Unmarshal([]byte(data), target)
+	check(err)
 }
 
 // func IndexToJson(index *map[string][]int, path *string) {
