@@ -33,6 +33,7 @@ func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *
 	alignment.DAligned = *d_aligned
 	alignment.Hsp = *hsp
 	alignment.Score = left_score + right_score + hsp.Score
+	aligment.Accuracy = alignment.Score / utils.SumProbSeq(0, 1, &alignment.DAligned)
 	return alignment
 }
 
@@ -97,8 +98,10 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 		// fmt.Println("d seq:", *utils.PrettyProbSeg(d, 0, d_idx + 1, &params.S, params.HitThres))
 	// }
 
+	// Coordinates of cell where Needleman-Wunsch table stopped expanding
 	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, params, gap_penalty, direction)
 	// fmt.Println("exited fill()")
+	
 	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, &params.S, params.HitThres, direction)
 	// traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, S, hit_thres, direction)
 	

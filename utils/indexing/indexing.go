@@ -15,7 +15,8 @@ func ProbIndexTable(index *map[string][]int,
 
 	for i := start; i < end; i++ {
 		seed := strings.Join((*seeds)[i], "")
-		(*index)[seed] = prob_find(&seed, d, params)
+		indices := prob_find(&seed, d, params)
+		(*index)[seed] = indices
 	}
 }
 

@@ -13,6 +13,10 @@ import (
 	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
+func SumProbSeq(start, end int, d_aligned *string) float64 {
+	return 1.
+}
+
 func SaveAlignments(alignments *[]*Alignment, params *Params) {
 	path := fmt.Sprintf("output/alignments.q:%s.w:%d.hit_thres:%.2f.delta:%.2f.hsp_thres:%.2f.json",
 		params.Q, params.W, params.HitThres, params.Delta, params.HspThres)
