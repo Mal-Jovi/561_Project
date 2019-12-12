@@ -4,10 +4,6 @@
 An implementation of BLAST adapted for querying a probabilistic database sequence.
 
 ## Instructions
-### Rust version
-Motivation: Rust is even faster than Go.  
-In progress.  
-Following this [tutorial](https://developers.redhat.com/blog/2017/11/16/speed-python-using-rust/): optimize Python code with Rust.
 
 ### Go version
 Parameters such as:
@@ -25,16 +21,3 @@ To run the script, enter the following command in the terminal:
 ```
 go run prob_blast.go
 ```
-
-### Python version
-Parameters are defined and can be modified in `config.py`.  
-
-To run, enter:
-```
-python prob_blast.py
-```
-
-## How it works
-### Database indexing
-### Ungapped extension
-### Gapped extension

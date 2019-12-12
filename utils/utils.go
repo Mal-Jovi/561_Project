@@ -13,13 +13,30 @@ import (
 	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
-func SumProbSeq(start, end int, d_aligned *string) float64 {
-	return 1.
+func SumProbSeq(start int, seg_aligned *string, prob_seq *[][]float64, S_idx *map[string]int, hit_thres float64) float64 {
+	sum := 0.
+	i := start
+	
+	for j := 0; j < len(*seg_aligned); j++ {
+		char := string((*seg_aligned)[j])
+		if char == "-" {
+			sum -= 1
+			continue
+		}
+		conf := (*prob_seq)[ (*S_idx)[char] ][i]
+		if conf >= hit_thres {
+			sum += conf
+		} else {
+			sum -= hit_thres - conf
+		}
+		i++
+	}
+	return sum
 }
 
 func SaveAlignments(alignments *[]*Alignment, params *Params) {
-	path := fmt.Sprintf("output/alignments.q:%s.w:%d.hit_thres:%.2f.delta:%.2f.hsp_thres:%.2f.json",
-		params.Q, params.W, params.HitThres, params.Delta, params.HspThres)
+	path := fmt.Sprintf("output/alignments.q.%s.w.%d.hit_thres.%.2f.delta.%.2f.e_thres.%.2f.json",
+		params.Q, params.W, params.HitThres, params.Delta, params.EThres)
 	
 	ExportToJson(alignments, &path)
 	fmt.Println("Saved alignments to", path)
@@ -108,7 +125,7 @@ func GetProbSeq(fasta string, conf *[]float64, S *[]string) *[][]float64 {
 				(*prob_seq)[i][j] = (*conf)[j]
 			
 			} else {
-				(*prob_seq)[i][j] = (1 - (*conf)[j]) / float64((len(*S) - 1))
+				(*prob_seq)[i][j] = (1 - (*conf)[j]) / float64(len(*S) - 1)
 			}
 		}
 	}

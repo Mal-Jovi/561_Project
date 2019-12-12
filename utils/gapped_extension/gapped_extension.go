@@ -13,8 +13,8 @@ func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *
 	q_aligned, d_aligned := middle(hsp, q, d, &params.S)
 	
 	// Extend to left and right of hsp
-	left_q_aligned, left_d_aligned, left_score := left(hsp, q, d, S_idx, params)
-	right_q_aligned, right_d_aligned, right_score := right(hsp, q, d, S_idx, params)
+	left_q_aligned, left_d_aligned, q_idx_left, d_idx_left, left_score := left(hsp, q, d, S_idx, params)
+	right_q_aligned, right_d_aligned, q_idx_right, d_idx_right, right_score := right(hsp, q, d, S_idx, params)
 
 	// If extended left, prepend left alignment to middle alignment
 	if left_q_aligned != nil && left_d_aligned != nil {
@@ -26,27 +26,46 @@ func Extend(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *
 		q_aligned += *right_q_aligned
 		*d_aligned += *right_d_aligned
 	}
+	score := left_score + hsp.Score + right_score
+	acc := score / utils.SumProbSeq(d_idx_left, d_aligned, d, S_idx, params.HitThres)
+	e_val := float64(len(*q) * len((*d)[0])) * math.Exp(-score)
 
 	// Create and return alignment object
 	var alignment Alignment
 	alignment.QAligned = q_aligned
 	alignment.DAligned = *d_aligned
+	alignment.Score = math.Round(score * 1000)/1000
+	alignment.Accuracy = math.Round(acc * 1000)/1000
+	alignment.EVal = math.Round(e_val * 1000)/1000
+	// alignment.Accuracy = acc
+	alignment.QIndices = []int{q_idx_left, q_idx_right}
+	alignment.DIndices = []int{d_idx_left, d_idx_right}
 	alignment.Hsp = *hsp
-	alignment.Score = left_score + right_score + hsp.Score
-	aligment.Accuracy = alignment.Score / utils.SumProbSeq(0, 1, &alignment.DAligned)
 	return alignment
 }
 
-func left(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+func left(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, int, int, float64) {
 	q_idx := hsp.QIdxLeft - 1
 	d_idx := hsp.DIdxLeft - 1
-	return extend(q_idx, d_idx, q, d, S_idx, params, -1)
+	left_q_aligned, left_d_aligned, q_idx_left, d_idx_left, left_score := extend(q_idx, d_idx, q, d, S_idx, params, -1)
+	if left_q_aligned == nil {
+		q_idx_left = q_idx + 1
+		d_idx_left = d_idx + 1
+	}
+	return left_q_aligned, left_d_aligned, q_idx_left, d_idx_left, left_score
+	// return extend(q_idx, d_idx, q, d, S_idx, params, -1)
 }
 
-func right(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, float64) {
+func right(hsp *Hsp, q *string, d *[][]float64, S_idx *map[string]int, params *Params) (*string, *string, int, int, float64) {
 	q_idx := hsp.QIdxRight + 1
 	d_idx := hsp.DIdxRight + 1
-	return extend(q_idx, d_idx, q, d, S_idx, params, 1)
+	right_q_aligned, right_d_aligned, q_idx_right, d_idx_right, right_score := extend(q_idx, d_idx, q, d, S_idx, params, 1)
+	if right_q_aligned == nil {
+		q_idx_right = q_idx - 1
+		d_idx_right = d_idx - 1
+	}
+	return right_q_aligned, right_d_aligned, q_idx_right, d_idx_right, right_score
+	// return extend(q_idx, d_idx, q, d, S_idx, params, 1)
 }
 
 func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) {
@@ -69,13 +88,12 @@ func middle(hsp *Hsp, q *string, d *[][]float64, S *[]string) (string, *string) 
 // 	       params.Delta: Extension threshold
 //     direction: Direction of extension; 1 for left-right, -1 for right-left
 //
-func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, params *Params, direction int) (*string, *string, float64) {
-
+func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, params *Params, direction int) (*string, *string, int, int, float64) {
 	var q_aligned *string
 	var d_aligned *string
 	
 	if !preconditions(q_idx, d_idx, q, d) {
-		return q_aligned, d_aligned, 0.
+		return nil, nil, -1, -1, 0.
 	}
 	if direction >= 0 {
 		direction = 1
@@ -99,7 +117,8 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 	// }
 
 	// Coordinates of cell where Needleman-Wunsch table stopped expanding
-	i_end, j_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, params, gap_penalty, direction)
+	// and q and d indices where extension stopped
+	i_end, j_end, q_end, d_end := fill(N, backptrs, q_idx, d_idx, q_len, d_len, q, d, S_idx, params, gap_penalty, direction)
 	// fmt.Println("exited fill()")
 	
 	q_aligned, d_aligned = traceback(backptrs, i_end, j_end, q_idx, d_idx, q, d, &params.S, params.HitThres, direction)
@@ -113,7 +132,7 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, S_idx *map[string]int, 
 	// fmt.Println(*q_aligned)
 	// fmt.Println(*d_aligned)
 
-	return q_aligned, d_aligned, (*N)[i_end][j_end]
+	return q_aligned, d_aligned, q_end, d_end, (*N)[i_end][j_end]
 }
 
 // fill
@@ -130,7 +149,7 @@ func fill(N *[][]float64,
 		  S_idx *map[string]int,
 		  params *Params,
 		  gap_penalty float64,
-		  direction int) (int, int) {
+		  direction int) (int, int, int, int) {
 
 	has_exceeded_delta := false
 	i_max, j_max := -1, -1
@@ -161,6 +180,8 @@ func fill(N *[][]float64,
 
 	var i_end int
 	var j_end int
+	var q_end int
+	var d_end int
 	if has_exceeded_delta {
 		// Stopped early, return cell with max score so far
 		i_end = i_max
@@ -170,7 +191,9 @@ func fill(N *[][]float64,
 		i_end = q_len
 		j_end = d_len
 	}
-	return i_end, j_end
+	q_end = q_idx + (i_end - 1) * direction
+	d_end = d_idx + (j_end - 1) * direction
+	return i_end, j_end, q_end, d_end
 }
 
 func fill_bottom(N *[][]float64,

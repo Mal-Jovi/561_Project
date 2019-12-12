@@ -1,0 +1,347 @@
+[
+    {
+        "QAligned": "AGCCGTGTTTGCTTTCACTACTTTCTGATCACATATC",
+        "DAligned": "ATACGTTTTTGCTTTTAATCCTTTCT--CCA-AT-TC",
+        "Score": 16.07,
+        "Accuracy": 0.586,
+        "EVal": 38.309,
+        "QIndices": [
+            431,
+            467
+        ],
+        "DIndices": [
+            122514,
+            122546
+        ],
+        "Hsp": {
+            "QIdxLeft": 434,
+            "QIdxRight": 456,
+            "DIdxLeft": 122517,
+            "DIdxRight": 122539,
+            "Score": 15.436666666666667,
+            "EVal": 0.16971388623485292
+        }
+    },
+    {
+        "QAligned": "AGCCGTGTTTGCTTTCACTACTTTCTGATCACATATC",
+        "DAligned": "ATACGTTTTTGCTTTTAATCCTTTCT--CCA-AT-TC",
+        "Score": 16.07,
+        "Accuracy": 0.586,
+        "EVal": 38.309,
+        "QIndices": [
+            431,
+            467
+        ],
+        "DIndices": [
+            122514,
+            122546
+        ],
+        "Hsp": {
+            "QIdxLeft": 434,
+            "QIdxRight": 456,
+            "DIdxLeft": 122517,
+            "DIdxRight": 122539,
+            "Score": 15.436666666666667,
+            "EVal": 0.16971388623485292
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGTA",
+        "DAligned": "TC-TGA-ACTTATTGCTAAACCAGCAGGGTC",
+        "Score": 15.93,
+        "Accuracy": 0.598,
+        "EVal": 44.065,
+        "QIndices": [
+            401,
+            431
+        ],
+        "DIndices": [
+            555105,
+            555133
+        ],
+        "Hsp": {
+            "QIdxLeft": 408,
+            "QIdxRight": 430,
+            "DIdxLeft": 555110,
+            "DIdxRight": 555132,
+            "Score": 15.570000000000002,
+            "EVal": 0.14137943866878863
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGTA",
+        "DAligned": "TC-TGA-ACTTATTGCTAAACCAGCAGGGTC",
+        "Score": 15.93,
+        "Accuracy": 0.598,
+        "EVal": 44.065,
+        "QIndices": [
+            401,
+            431
+        ],
+        "DIndices": [
+            555105,
+            555133
+        ],
+        "Hsp": {
+            "QIdxLeft": 408,
+            "QIdxRight": 430,
+            "DIdxLeft": 555110,
+            "DIdxRight": 555132,
+            "Score": 15.570000000000002,
+            "EVal": 0.14137943866878863
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGTA",
+        "DAligned": "TC-TGA-ACTTATTGCTAAACCAGCAGGGTC",
+        "Score": 15.93,
+        "Accuracy": 0.598,
+        "EVal": 44.065,
+        "QIndices": [
+            401,
+            431
+        ],
+        "DIndices": [
+            555105,
+            555133
+        ],
+        "Hsp": {
+            "QIdxLeft": 408,
+            "QIdxRight": 430,
+            "DIdxLeft": 555110,
+            "DIdxRight": 555132,
+            "Score": 15.57,
+            "EVal": 0.14137943866878863
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGTA",
+        "DAligned": "TC-TGA-ACTTATTGCTAAACCAGCAGGGTC",
+        "Score": 15.93,
+        "Accuracy": 0.598,
+        "EVal": 44.065,
+        "QIndices": [
+            401,
+            431
+        ],
+        "DIndices": [
+            555105,
+            555133
+        ],
+        "Hsp": {
+            "QIdxLeft": 408,
+            "QIdxRight": 430,
+            "DIdxLeft": 555110,
+            "DIdxRight": 555132,
+            "Score": 15.569999999999999,
+            "EVal": 0.14137943866878913
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGTA",
+        "DAligned": "TC-TGA-ACTTATTGCTAAACCAGCAGGGTC",
+        "Score": 15.93,
+        "Accuracy": 0.598,
+        "EVal": 44.065,
+        "QIndices": [
+            401,
+            431
+        ],
+        "DIndices": [
+            555105,
+            555133
+        ],
+        "Hsp": {
+            "QIdxLeft": 408,
+            "QIdxRight": 430,
+            "DIdxLeft": 555110,
+            "DIdxRight": 555132,
+            "Score": 15.57,
+            "EVal": 0.14137943866878863
+        }
+    },
+    {
+        "QAligned": "GGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "GGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.743,
+        "Accuracy": 0.738,
+        "EVal": 53.109,
+        "QIndices": [
+            426,
+            447
+        ],
+        "DIndices": [
+            223416,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 15.823333333333336,
+            "EVal": 0.0999210789298754
+        }
+    },
+    {
+        "QAligned": "GGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "GGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.743,
+        "Accuracy": 0.738,
+        "EVal": 53.109,
+        "QIndices": [
+            426,
+            447
+        ],
+        "DIndices": [
+            223416,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 15.823333333333336,
+            "EVal": 0.0999210789298754
+        }
+    },
+    {
+        "QAligned": "GGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "GGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.743,
+        "Accuracy": 0.738,
+        "EVal": 53.109,
+        "QIndices": [
+            426,
+            447
+        ],
+        "DIndices": [
+            223416,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 15.823333333333336,
+            "EVal": 0.0999210789298754
+        }
+    },
+    {
+        "QAligned": "GGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "GGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.743,
+        "Accuracy": 0.738,
+        "EVal": 53.109,
+        "QIndices": [
+            426,
+            447
+        ],
+        "DIndices": [
+            223416,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 15.823333333333334,
+            "EVal": 0.09992107892987576
+        }
+    },
+    {
+        "QAligned": "GGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "GGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.743,
+        "Accuracy": 0.738,
+        "EVal": 53.109,
+        "QIndices": [
+            426,
+            447
+        ],
+        "DIndices": [
+            223416,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 15.823333333333336,
+            "EVal": 0.0999210789298754
+        }
+    },
+    {
+        "QAligned": "CGGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 15.07,
+        "Accuracy": 0.713,
+        "EVal": 104.134,
+        "QIndices": [
+            425,
+            447
+        ],
+        "DIndices": [
+            223415,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 426,
+            "QIdxRight": 444,
+            "DIdxLeft": 223416,
+            "DIdxRight": 223434,
+            "Score": 15.563333333333336,
+            "EVal": 0.14267661898141185
+        }
+    },
+    {
+        "QAligned": "CGATG-TGCATGCTTGACCCTAGGCTACAGTTAA",
+        "DAligned": "CCAAGCT-CAGGGTTGACCCTGGGATACAGATAC",
+        "Score": 13.263,
+        "Accuracy": 0.496,
+        "EVal": 634.186,
+        "QIndices": [
+            91,
+            123
+        ],
+        "DIndices": [
+            182282,
+            182314
+        ],
+        "Hsp": {
+            "QIdxLeft": 98,
+            "QIdxRight": 122,
+            "DIdxLeft": 182289,
+            "DIdxRight": 182313,
+            "Score": 13.706666666666665,
+            "EVal": 1.8156775757947183
+        }
+    },
+    {
+        "QAligned": "CGATG-TGCATGCTTGACCCTAGGCTACAGTTAA",
+        "DAligned": "CCAAGCT-CAGGGTTGACCCTGGGATACAGATAC",
+        "Score": 13.263,
+        "Accuracy": 0.496,
+        "EVal": 634.186,
+        "QIndices": [
+            91,
+            123
+        ],
+        "DIndices": [
+            182282,
+            182314
+        ],
+        "Hsp": {
+            "QIdxLeft": 98,
+            "QIdxRight": 122,
+            "DIdxLeft": 182289,
+            "DIdxRight": 182313,
+            "Score": 13.706666666666667,
+            "EVal": 1.815677575794712
+        }
+    }
+]

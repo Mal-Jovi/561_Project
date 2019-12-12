@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"math"
+	"sort"
 	"github.com/kr/pretty"
 	"github.com/Mal-Jovi/561_Project/utils"
 	"github.com/Mal-Jovi/561_Project/utils/indexing"
@@ -56,7 +57,7 @@ func prob_blast(q * string, d *[][] float64, params *Params) *[]*Alignment {
 // Index database, then export the index table
 //
 func prob_index_table(d *[][]float64, params *Params) *map[string][]int {
-	path := fmt.Sprintf("data/processed/prob_index_table.w:%d.hit_thres:%.2f.json", params.W, params.HitThres)
+	path := fmt.Sprintf("data/processed/prob_index_table.w.%d.hit_thres.%.2f.json", params.W, params.HitThres)
 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		return utils.IndexFromJson(&path)
@@ -102,6 +103,11 @@ func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Par
 		for _, d_idx := range (*index)[seed] {
 			hsp_score := ungapped_extension.ScoreMiddle(q_idx, d_idx, q, d, params)
 
+			// dummy := ""
+			// dummy_S_idx := gapped_extension.SIdx(&params.S)
+
+			// fmt.Println("seed hit acc:", hsp_score/utils.SumProbSeq(d_idx, d_idx+params.W-1, &dummy, d, dummy_S_idx, params.HitThres, params))
+
 			hsp_left, score_left := ungapped_extension.Left(q_idx, d_idx, q, d, params)
 			hsp_right, score_right := ungapped_extension.Right(q_idx, d_idx, q, d, params)
 
@@ -115,8 +121,21 @@ func prob_extend(q *string, d *[][]float64, index *map[string][]int, params *Par
 				hsp_score += score_right
 			}
 
-			if hsp_score >= params.HspThres {
-				hsps = append(hsps, &Hsp{(*hsp_left)[0], (*hsp_right)[0], (*hsp_left)[1], (*hsp_right)[1], hsp_score})
+			// E-value of HSP
+			e_val := 0.711 * float64(len(*q) * len((*d)[0])) * math.Exp(-1.37 * hsp_score)
+
+			// if hsp_score >= params.HspThres {
+			if e_val <= params.EThres {
+				var hsp Hsp
+				hsp.QIdxLeft = (*hsp_left)[0]
+				hsp.QIdxRight = (*hsp_right)[0]
+				hsp.DIdxLeft = (*hsp_left)[1]
+				hsp.DIdxRight = (*hsp_right)[1]
+				hsp.Score = hsp_score
+				hsp.EVal = e_val
+				hsps = append(hsps, &hsp)
+
+				// hsp_acc := hsp.Score/utils.SumProbSeq(hsp.DIdxLeft, hsp.DIdxRight, &dummy, d, dummy_S_idx, params.HitThres, params)
 			}
 		}
 	}
@@ -136,5 +155,9 @@ func prob_extend_gap(q *string, d *[][]float64, hsps *[]*Hsp, params *Params) *[
 		alignment := gapped_extension.Extend((*hsps)[i], q, d, S_idx, params)
 		alignments = append(alignments, &alignment)
 	}
+	sort.Slice(alignments, func(i, j int) bool {
+		// return alignments[i].Accuracy > alignments[j].Accuracy
+		return alignments[i].EVal < alignments[j].EVal
+	})
 	return &alignments
 }

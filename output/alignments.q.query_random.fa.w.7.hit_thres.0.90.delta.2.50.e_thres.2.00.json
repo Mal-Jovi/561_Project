@@ -1,0 +1,301 @@
+[
+    {
+        "QAligned": "AGCCGTGTTTGCTTTCACTACTTTCT-G-A-TC-ACA-TAT-C-A-AG-TG-AG-TTCGTG-TGCAACAAGTATCTC-CAGAC-A--ACGCGCTG",
+        "DAligned": "ATACGTTTTTGCTTTTAATCCTTTCTCCAATTCCGCGGTATGCTACAGATGAAGAAAC-TGAGGC--CCAG-ATCACACA-ACTAGTAAGTGGTG",
+        "Score": 19.187,
+        "Accuracy": 0.253,
+        "EVal": 1.697,
+        "QIndices": [
+            431,
+            509
+        ],
+        "DIndices": [
+            122514,
+            122603
+        ],
+        "Hsp": {
+            "QIdxLeft": 434,
+            "QIdxRight": 456,
+            "DIdxLeft": 122517,
+            "DIdxRight": 122539,
+            "Score": 15.036666666666667,
+            "EVal": 0.2935693792017795
+        }
+    },
+    {
+        "QAligned": "AGCCGTGTTTGCTTTCACTACTTTCT-G-A-TC-ACA-TAT-C-A-AG-TG-AG-TTCGTG-TGCAACAAGTATCTC-CAGAC-A--ACGCGCTG",
+        "DAligned": "ATACGTTTTTGCTTTTAATCCTTTCTCCAATTCCGCGGTATGCTACAGATGAAGAAAC-TGAGGC--CCAG-ATCACACA-ACTAGTAAGTGGTG",
+        "Score": 19.187,
+        "Accuracy": 0.253,
+        "EVal": 1.697,
+        "QIndices": [
+            431,
+            509
+        ],
+        "DIndices": [
+            122514,
+            122603
+        ],
+        "Hsp": {
+            "QIdxLeft": 434,
+            "QIdxRight": 456,
+            "DIdxLeft": 122517,
+            "DIdxRight": 122539,
+            "Score": 15.036666666666667,
+            "EVal": 0.2935693792017795
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--AACG--GGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 17.413,
+        "Accuracy": 0.455,
+        "EVal": 9.998,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 14.823333333333336,
+            "EVal": 0.39322448745884553
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--AACG--GGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 17.413,
+        "Accuracy": 0.455,
+        "EVal": 9.998,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 14.823333333333336,
+            "EVal": 0.39322448745884553
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--AACG--GGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 17.413,
+        "Accuracy": 0.455,
+        "EVal": 9.998,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 14.823333333333334,
+            "EVal": 0.3932244874588469
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--AACG--GGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 17.413,
+        "Accuracy": 0.455,
+        "EVal": 9.998,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 14.823333333333334,
+            "EVal": 0.3932244874588469
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--AACG--GGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 17.413,
+        "Accuracy": 0.455,
+        "EVal": 9.998,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 427,
+            "QIdxRight": 444,
+            "DIdxLeft": 223417,
+            "DIdxRight": 223434,
+            "Score": 14.823333333333334,
+            "EVal": 0.3932244874588469
+        }
+    },
+    {
+        "QAligned": "ACTTATTGCT-ACACT--A-A-CGGGGTAGCCGTGTTTGCTT-TCA",
+        "DAligned": "AGTGAT-GCTCACTCTGCAGGGAGGGGTAGCCCTGTTTGCTTCTAA",
+        "Score": 16.173,
+        "Accuracy": 0.422,
+        "EVal": 34.548,
+        "QIndices": [
+            408,
+            447
+        ],
+        "DIndices": [
+            223394,
+            223438
+        ],
+        "Hsp": {
+            "QIdxLeft": 426,
+            "QIdxRight": 444,
+            "DIdxLeft": 223416,
+            "DIdxRight": 223434,
+            "Score": 14.463333333333336,
+            "EVal": 0.6439239722971999
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGT-AGCCGTG-T--TTGCT-TTCACTACTTTCTG-ATCA-CATATCAA",
+        "DAligned": "GCTCTGAACTTATTGCTAAACCAGCAGGGTCATTC-TGATCATTGATCTGCA-AACCAGCCGGGTCAGGA-ATCAA",
+        "Score": 15.29,
+        "Accuracy": 0.251,
+        "EVal": 83.569,
+        "QIndices": [
+            401,
+            469
+        ],
+        "DIndices": [
+            555103,
+            555175
+        ],
+        "Hsp": {
+            "QIdxLeft": 402,
+            "QIdxRight": 430,
+            "DIdxLeft": 555104,
+            "DIdxRight": 555132,
+            "Score": 15.43,
+            "EVal": 0.17127103990638826
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGT-AGCCGTG-T--TTGCT-TTCACTACTTTCTG-ATCA-CATATCAA",
+        "DAligned": "GCTCTGAACTTATTGCTAAACCAGCAGGGTCATTC-TGATCATTGATCTGCA-AACCAGCCGGGTCAGGA-ATCAA",
+        "Score": 15.29,
+        "Accuracy": 0.251,
+        "EVal": 83.569,
+        "QIndices": [
+            401,
+            469
+        ],
+        "DIndices": [
+            555103,
+            555175
+        ],
+        "Hsp": {
+            "QIdxLeft": 402,
+            "QIdxRight": 430,
+            "DIdxLeft": 555104,
+            "DIdxRight": 555132,
+            "Score": 15.430000000000001,
+            "EVal": 0.17127103990638826
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGT-AGCCGTG-T--TTGCT-TTCACTACTTTCTG-ATCA-CATATCAA",
+        "DAligned": "GCTCTGAACTTATTGCTAAACCAGCAGGGTCATTC-TGATCATTGATCTGCA-AACCAGCCGGGTCAGGA-ATCAA",
+        "Score": 15.29,
+        "Accuracy": 0.251,
+        "EVal": 83.569,
+        "QIndices": [
+            401,
+            469
+        ],
+        "DIndices": [
+            555103,
+            555175
+        ],
+        "Hsp": {
+            "QIdxLeft": 402,
+            "QIdxRight": 430,
+            "DIdxLeft": 555104,
+            "DIdxRight": 555132,
+            "Score": 15.430000000000001,
+            "EVal": 0.17127103990638826
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGT-AGCCGTG-T--TTGCT-TTCACTACTTTCTG-ATCA-CATATCAA",
+        "DAligned": "GCTCTGAACTTATTGCTAAACCAGCAGGGTCATTC-TGATCATTGATCTGCA-AACCAGCCGGGTCAGGA-ATCAA",
+        "Score": 15.29,
+        "Accuracy": 0.251,
+        "EVal": 83.569,
+        "QIndices": [
+            401,
+            469
+        ],
+        "DIndices": [
+            555103,
+            555175
+        ],
+        "Hsp": {
+            "QIdxLeft": 402,
+            "QIdxRight": 430,
+            "DIdxLeft": 555104,
+            "DIdxRight": 555132,
+            "Score": 15.430000000000001,
+            "EVal": 0.17127103990638826
+        }
+    },
+    {
+        "QAligned": "TCTTTATACTTATTGCTACACTAACGGGGT-AGCCGTG-T--TTGCT-TTCACTACTTTCTG-ATCA-CATATCAA",
+        "DAligned": "GCTCTGAACTTATTGCTAAACCAGCAGGGTCATTC-TGATCATTGATCTGCA-AACCAGCCGGGTCAGGA-ATCAA",
+        "Score": 15.29,
+        "Accuracy": 0.251,
+        "EVal": 83.569,
+        "QIndices": [
+            401,
+            469
+        ],
+        "DIndices": [
+            555103,
+            555175
+        ],
+        "Hsp": {
+            "QIdxLeft": 402,
+            "QIdxRight": 430,
+            "DIdxLeft": 555104,
+            "DIdxRight": 555132,
+            "Score": 15.430000000000001,
+            "EVal": 0.17127103990638826
+        }
+    }
+]

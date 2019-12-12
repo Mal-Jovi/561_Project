@@ -1,12 +1,12 @@
 {
     "w": 7,
-    "hit_thres": 0.6,
-    "delta": 2.5,
+    "hit_thres": 0.8,
+    "delta": 10.0,
     "hsp_thres": 15.0,
     "S": ["A", "T", "G", "C"],
-    "e_thres": 0.00001,
+    "e_thres": 2.0,
     "d": "data/raw/chr22.maf.ancestors.42000000.complete.boreo.fa",
     "d_conf": "data/raw/chr22.maf.ancestors.42000000.complete.boreo.conf",
-    "q": "query_long.fa",
+    "q": "query_random.fa",
     "num_cores": 4
 }

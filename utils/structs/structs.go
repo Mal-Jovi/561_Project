@@ -16,12 +16,11 @@ type Params struct {
 type Alignment struct {
 	QAligned string
 	DAligned string
-	QIdxLeft int
-	QIdxRight int
-	DIdxLeft int
-	DIdxRight int
 	Score float64
 	Accuracy float64
+	EVal float64
+	QIndices []int
+	DIndices []int
 	Hsp Hsp
 }
 
@@ -31,4 +30,5 @@ type Hsp struct {
 	DIdxLeft int
 	DIdxRight int
 	Score float64
+	EVal float64
 }

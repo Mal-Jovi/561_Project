@@ -1,14 +1,17 @@
 package ungapped_extension
 
 import (
+	// "fmt"
 	"math"
 	"github.com/Mal-Jovi/561_Project/utils"
+	"github.com/Mal-Jovi/561_Project/utils/gapped_extension"
 	. "github.com/Mal-Jovi/561_Project/utils/structs"
 )
 
 func extend(q_idx, d_idx int, q *string, d *[][]float64, params *Params, direction int) (*[]int, float64) {
 	has_exceeded_delta := false
-	max_score := math.Inf(-1)
+	// max_score := math.Inf(-1)
+	max_score := 0.
 	max_q_idx := q_idx
 	max_d_idx := d_idx
 	score := 0.
@@ -19,12 +22,18 @@ func extend(q_idx, d_idx int, q *string, d *[][]float64, params *Params, directi
 		direction = -1
 	}
 
+	S_idx := gapped_extension.SIdx(&params.S)
+
 	for 0 < q_idx && q_idx < len(*q) - 1 && 0 < d_idx && d_idx < len((*d)[0]) - 1  {
 		q_idx += direction
 		d_idx += direction
 		
-		// score = score + prob if prob > hit_thres else score - (hit_thres - prob)
-		prob := (*d)[ utils.SliceIndex(&params.S, string((*q)[q_idx])) ][ d_idx ]
+		// score += prob if prob > hit_thres else score -= (hit_thres - prob)
+		char := string((*q)[q_idx])
+		char_idx := (*S_idx)[char]
+		// prob := (*d)[ utils.SliceIndex(&params.S, string((*q)[q_idx])) ][ d_idx ]
+		prob := (*d)[ char_idx ][ d_idx ]
+		// fmt.Println("char:", char)
 		if prob >= params.HitThres {
 			score += prob
 		} else {
